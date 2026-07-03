@@ -1,0 +1,4 @@
+# Hugging Face Spaces / GitHub need the large prebuilt index tracked via git-lfs
+# (chroma.sqlite3 is ~145MB; plain git rejects files >100MB).
+chroma_db/** filter=lfs diff=lfs merge=lfs -text
+data/tables.db filter=lfs diff=lfs merge=lfs -text

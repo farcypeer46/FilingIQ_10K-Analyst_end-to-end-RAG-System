@@ -1,0 +1,358 @@
+# Held-out golden Q&A set — AMZN and GOOGL ONLY (never the dev companies AAPL/MSFT/NVDA).
+#
+# HOW TO FILL THIS IN:
+#   - ground_truth: ""      -> ANSWERABLE, still TO FILL (needs filing text).
+#   - ground_truth: REFUSE  -> the system MUST refuse (do not add an answer).
+#   - relevant: ""          -> write the source chunk "COMPANY FYyyyy section" for Hit@k/MRR.
+#
+# `type` drives per-category metrics:
+#   factual | numeric | comparison | refuse | adversarial | citation | cross_company
+#
+# All numeric/comparison ground_truths below were VERIFIED against the income
+# statements / segment tables in the index (USD millions).
+
+questions:
+
+  # ============ A. SIMPLE FACTUAL (10) — basic retrieval + citation ============
+  - question: "What are Amazon's reportable business segments?"
+    ground_truth: "North America, International, and Amazon Web Services (AWS)."
+    company: AMZN
+    type: factual
+    expected_route: TEXT
+    relevant: "AMZN FY2025 business"
+
+  - question: "What does Amazon identify as its main sources of competition?"
+    ground_truth: "A broad array of competitors across sectors: physical, e-commerce, and omnichannel retailers; media producers and distributors; web search engines, comparison-shopping sites, and social networks; e-commerce service providers; fulfillment and logistics companies; IT and cloud providers (including AI); consumer-electronics makers; online and physical grocers; advertising-services firms; and healthcare providers. Principal competitive factors in retail are selection, price, and convenience."
+    company: AMZN
+    type: factual
+    expected_route: TEXT
+    relevant: "AMZN FY2025 business"
+
+  - question: "What risks does Amazon cite related to international operations?"
+    ground_truth: "Local economic and political conditions; government regulation and restrictive/trade-protection actions (tariffs, foreign-ownership limits); IP-enforcement and product-distribution restrictions; licensing requirements; limits on fund repatriation and foreign-exchange restrictions; limited local infrastructure; unfavorable payment cycles; privacy/data/consumer-protection laws; lower internet use and consumer spending; higher payment risk; staffing and management difficulty; labor unions/works councils; FCPA compliance; trade and tax policy; and geopolitical events. PRC and India impose specific foreign-ownership and licensing restrictions, and heavy reliance on China-based sellers and suppliers adds trade/regulatory risk."
+    company: AMZN
+    type: factual
+    expected_route: TEXT
+    relevant: "AMZN FY2025 risk_factors"
+
+  - question: "How does Alphabet describe its \"Other Bets\" segment?"
+    ground_truth: "Other Bets is Alphabet's collection of all non-Google businesses, at various stages of development — from R&D-phase ventures like X (the moonshot factory) to commercializing ones like Waymo (autonomous ride-hailing) and Isomorphic Labs (AI drug discovery). They operate as independent companies, some with their own boards and outside investors, and generate revenue primarily from the sale of autonomous transportation and internet services."
+    company: GOOGL
+    type: factual
+    expected_route: TEXT
+    relevant: "GOOGL FY2025 business"
+
+  - question: "What are Alphabet's main revenue sources within Google Services?"
+    ground_truth: "Google Services earns revenue primarily from advertising — performance and brand ads on Google Search & other properties, YouTube, and Google Network partners' properties. It also earns non-advertising revenue from consumer subscriptions (e.g., YouTube TV, YouTube Music and Premium, NFL Sunday Ticket, Google One), platforms (Google Play app sales and in-app purchases), and devices (the Pixel family)."
+    company: GOOGL
+    type: factual
+    expected_route: TEXT
+    relevant: "GOOGL FY2025 business"
+
+  - question: "What does Amazon say about the seasonality of its sales?"
+    ground_truth: "Its business is seasonal, historically generating higher sales volume in the fourth quarter, which ends December 31 (the holiday season)."
+    company: AMZN
+    type: factual
+    expected_route: TEXT
+    relevant: "AMZN FY2025 business"
+
+  - question: "What risks does Alphabet identify related to regulation and antitrust?"
+    ground_truth: "Alphabet faces heightened US and foreign government scrutiny and numerous evolving laws and regulations — particularly on AI, competition/antitrust, consumer protection, content moderation (including access for minors), data privacy and security, intellectual property, and news publications. Compliance may be onerous and could increase its cost of doing business, make products less useful, limit or force changes to its business practices and offerings, affect its competitive position, and harm its business, reputation, and results."
+    company: GOOGL
+    type: factual
+    expected_route: TEXT
+    relevant: "GOOGL FY2025 risk_factors"
+
+  - question: "Where are Amazon's principal properties and fulfillment operations located?"
+    ground_truth: "As of December 31, 2025, Amazon's facilities span North America and International. The large majority of its square footage is fulfillment, data centers, and other operations (about 474 million leased sq ft in North America and 186 million internationally), alongside office space and physical stores — roughly 741.5 million leased and 78.1 million owned square feet in total."
+    company: AMZN
+    type: factual
+    expected_route: TEXT
+    relevant: "AMZN FY2025 risk_factors"   # Item 2 Properties is mislabeled risk_factors in the index
+
+  - question: "What does Alphabet say about its dependence on advertising revenue as a risk?"
+    ground_truth: "Alphabet generates a significant portion of revenue from advertising — more than 70% of total revenues in 2025. Reduced advertiser spending, loss of partners (who can terminate at any time), shifts in online advertising or new ad formats, adverse macroeconomic conditions, or technologies that block or impair personalized ads could harm its business, financial condition, and operating results."
+    company: GOOGL
+    type: factual
+    expected_route: TEXT
+    relevant: "GOOGL FY2025 risk_factors"
+
+  - question: "How does Amazon describe the role of AWS in its business?"
+    ground_truth: "AWS is one of Amazon's three reportable segments; it serves developers and enterprises of all sizes with a broad set of on-demand technology services, including compute, storage, database, analytics, and artificial intelligence and machine learning."
+    company: AMZN
+    type: factual
+    expected_route: TEXT
+    relevant: "AMZN FY2025 business"
+
+  # ============ B. NUMERIC, EXACT-MATCH (10) — table retrieval + correctness ============
+  - question: "What was Amazon's total net sales in fiscal 2024?"
+    ground_truth: "$637,959 million (approximately $638 billion)."
+    company: AMZN
+    year: "2024"
+    type: numeric
+    expected_route: TABLE
+    relevant: "AMZN FY2024 financial_statements"
+
+  - question: "What was Amazon's net income in fiscal 2023?"
+    ground_truth: "$30,425 million."
+    company: AMZN
+    year: "2023"
+    type: numeric
+    expected_route: TABLE
+    relevant: "AMZN FY2023 financial_statements"
+
+  - question: "What was AWS's operating income in fiscal 2024?"
+    ground_truth: "$39,834 million."
+    company: AMZN
+    year: "2024"
+    type: numeric
+    expected_route: TABLE
+    relevant: "AMZN FY2024 financial_statements"
+
+  - question: "What was Alphabet's total revenue in fiscal 2024?"
+    ground_truth: "$350,018 million (approximately $350 billion)."
+    company: GOOGL
+    year: "2024"
+    type: numeric
+    expected_route: TABLE
+    relevant: "GOOGL FY2024 financial_statements"
+
+  - question: "What was Google Cloud's revenue in fiscal 2023?"
+    ground_truth: "$33,088 million."
+    company: GOOGL
+    year: "2023"
+    type: numeric
+    expected_route: TABLE
+    relevant: "GOOGL FY2023 financial_statements"
+
+  - question: "What was Alphabet's net income in fiscal 2024?"
+    ground_truth: "$100,118 million."
+    company: GOOGL
+    year: "2024"
+    type: numeric
+    expected_route: TABLE
+    relevant: "GOOGL FY2024 financial_statements"
+
+  - question: "What was Amazon's operating cash flow in fiscal 2024?"
+    ground_truth: "$115,877 million (net cash provided by operating activities)."
+    company: AMZN
+    year: "2024"
+    type: numeric
+    expected_route: TABLE
+    relevant: "AMZN FY2024 financial_statements"
+
+  - question: "How many full-time and part-time employees did Amazon report in its most recent 10-K?"
+    ground_truth: "Approximately 1,576,000 full-time and part-time employees as of December 31, 2025 (reported together, not split out)."
+    company: AMZN
+    year: "2025"
+    type: numeric
+    expected_route: TEXT
+    relevant: "AMZN FY2025 business"
+
+  - question: "What was Alphabet's research and development expense in fiscal 2024?"
+    ground_truth: "$49,326 million."
+    company: GOOGL
+    year: "2024"
+    type: numeric
+    expected_route: TABLE
+    relevant: "GOOGL FY2024 financial_statements"
+
+  - question: "What was Amazon's North America segment operating income in fiscal 2023?"
+    ground_truth: "$14,877 million."
+    company: AMZN
+    year: "2023"
+    type: numeric
+    expected_route: TABLE
+    relevant: "AMZN FY2023 financial_statements"
+
+  # ============ C. COMPARISON / MULTI-YEAR (8) — stresses query decomposition ============
+  - question: "How did Amazon's total net sales change from fiscal 2023 to fiscal 2024?"
+    ground_truth: "Total net sales rose from $574,785 million in 2023 to $637,959 million in 2024 — an increase of about $63.2 billion (~11%)."
+    company: AMZN
+    type: comparison
+    expected_route: TABLE
+    relevant: "AMZN FY2024 financial_statements"
+
+  - question: "Compare AWS revenue in fiscal 2023 vs fiscal 2024."
+    ground_truth: "AWS net sales grew from $90,757 million in 2023 to $107,556 million in 2024 — about $16.8 billion higher (~19%)."
+    company: AMZN
+    type: comparison
+    expected_route: TABLE
+    relevant: "AMZN FY2024 financial_statements"
+
+  - question: "How did Alphabet's Google Cloud operating income change from 2023 to 2024?"
+    ground_truth: "Google Cloud operating income rose from $1,716 million in 2023 to $6,112 million in 2024 (more than tripled)."
+    company: GOOGL
+    type: comparison
+    expected_route: TABLE
+    relevant: "GOOGL FY2024 financial_statements"
+
+  - question: "Did Amazon's net income increase or decrease from fiscal 2023 to 2025, and by roughly how much?"
+    ground_truth: "It increased — from $30,425 million in 2023 to $77,670 million in 2025, up about $47.2 billion (more than doubled)."
+    company: AMZN
+    type: comparison
+    expected_route: TABLE
+    relevant: "AMZN FY2025 financial_statements"
+
+  - question: "How did Alphabet's total revenue grow across fiscal 2023, 2024, and 2025?"
+    ground_truth: "Total revenues grew from $307,394 million (2023) to $350,018 million (2024) to $402,836 million (2025)."
+    company: GOOGL
+    type: comparison
+    expected_route: TABLE
+    relevant: "GOOGL FY2025 financial_statements"
+
+  - question: "How did Amazon's risk factor discussion of AI change between its 2023 and 2025 filings?"
+    ground_truth: "AI became far more pervasive in the risk factors. In 2023, AI appeared in a handful of places: intensifying competition (AI/ML applications), intellectual-property infringement (its and customers' use of AI), ethical/social perceptions of its AI development, reliance on limited semiconductor/GPU suppliers for AI infrastructure, and evolving AI regulation. By 2025, AI was woven into many more risks — added to the 'internet and other technologies including artificial intelligence facilitate competitive entry' language; explicitly named as an investment risk of expanding into new products/technologies; cited as a strain on management from adopting AI/ML; listed as a data-security threat vector ('developing technologies such as artificial intelligence'); and added to competition for technical talent. The wording also broadened from AI 'use' to 'development and use' and added 'automation.' Overall AI shifted from a few specific mentions to a cross-cutting theme."
+    company: AMZN
+    type: comparison
+    expected_route: TEXT
+    relevant: "AMZN FY2023 risk_factors; AMZN FY2025 risk_factors"
+
+  - question: "Did Alphabet's headcount increase or decrease between fiscal 2023 and fiscal 2024?"
+    ground_truth: "It increased slightly — from 182,502 employees as of December 31, 2023 to 183,323 as of December 31, 2024 (up about 821, essentially flat)."
+    company: GOOGL
+    type: comparison
+    expected_route: TEXT
+    relevant: "GOOGL FY2023 business; GOOGL FY2024 business"
+
+  # ============ D. REFUSAL (9) — answer genuinely not in the filings ============
+  - question: "What was Amazon's monthly active Prime user count in 2024?"
+    ground_truth: "REFUSE"
+    company: AMZN
+    type: refuse
+
+  - question: "What is Alphabet's projected revenue for fiscal 2027?"
+    ground_truth: "REFUSE"
+    company: GOOGL
+    type: refuse
+
+  - question: "What did Amazon's CEO say on the Q3 2024 earnings call?"
+    ground_truth: "REFUSE"
+    company: AMZN
+    type: refuse
+
+  - question: "What is Amazon's current stock price?"
+    ground_truth: "REFUSE"
+    company: AMZN
+    type: refuse
+
+  - question: "How many YouTube Premium subscribers did Alphabet report in its 10-K?"
+    ground_truth: "REFUSE"
+    company: GOOGL
+    type: refuse
+
+  - question: "What was Tesla's revenue in fiscal 2024?"
+    ground_truth: "REFUSE"
+    company: GOOGL   # guardrail: Tesla is not in the corpus
+    type: refuse
+
+  - question: "What acquisition targets is Alphabet currently evaluating?"
+    ground_truth: "REFUSE"
+    company: GOOGL
+    type: refuse
+
+  - question: "What was Amazon's market share in US e-commerce according to its 10-K?"
+    ground_truth: "REFUSE"
+    company: AMZN
+    type: refuse
+
+  - question: "What salary does Alphabet's CFO earn?"
+    ground_truth: "REFUSE"
+    company: GOOGL   # exec comp is in the proxy statement, not the 10-K
+    type: refuse
+
+  # ============ E. ADVERSARIAL / TRAP (5) — year-mixing, false premise, verbose ============
+  - question: "What was Amazon's net sales in fiscal 2021?"
+    ground_truth: "REFUSE"
+    company: AMZN   # year outside the corpus — must refuse, not return a 2023 number
+    type: adversarial
+
+  - question: "What was Google Cloud's revenue in 2019?"
+    ground_truth: "REFUSE"
+    company: GOOGL   # year outside the corpus
+    type: adversarial
+
+  - question: "Why did Amazon's AWS segment lose money in fiscal 2024?"
+    ground_truth: "False premise — AWS did NOT lose money in fiscal 2024. AWS was profitable, reporting operating income of $39,834 million. The correct answer should reject the premise, not invent a loss."
+    company: AMZN
+    year: "2024"
+    type: adversarial
+    expected_route: HYBRID
+    relevant: "AMZN FY2024 financial_statements"
+
+  - question: "What did Amazon say about spinning off AWS in its 10-K?"
+    ground_truth: "REFUSE"
+    company: AMZN   # plausible-sounding but not in the filings
+    type: adversarial
+
+  - question: "Hey could you tell me what the total amount of money Alphabet the parent company of Google brought in as revenue during their 2024 fiscal year was?"
+    ground_truth: "$350,018 million (approximately $350 billion) — Alphabet's total revenues for fiscal 2024."
+    company: GOOGL
+    year: "2024"
+    type: adversarial
+    expected_route: TABLE
+    relevant: "GOOGL FY2024 financial_statements"
+
+  # ============ F. SECTION-SPECIFIC CITATION CHECKS (3) — citation accuracy ============
+  - question: "According to Item 7A, what market risks is Amazon exposed to?"
+    ground_truth: "Item 7A discloses three market risks: (1) Interest rate risk — affecting its investment portfolio of marketable debt securities and money-market funds, and the fair value of its fixed-rate long-term debt; (2) Foreign exchange risk — from its internationally-focused stores and AWS (primarily Euros, British Pounds, and Japanese Yen) and from foreign-denominated cash and intercompany balances; and (3) Equity investment risk — market-price volatility on its equity, equity-warrant, and convertible-debt investments in public and private companies (e.g., Rivian and Anthropic)."
+    company: AMZN
+    type: citation
+    expected_route: TEXT
+    relevant: "AMZN FY2025 market_risk"
+
+  - question: "What does Alphabet disclose about legal proceedings?"
+    ground_truth: "Alphabet discloses extensive legal proceedings, dominated by antitrust matters in the US, EU, and elsewhere — including the EC Shopping (€2.4B), Android (€4.1B), and AdSense (€1.5B, later annulled) fines; the US DOJ Search case (ruled against Google, with distribution restrictions and data-sharing remedies entered December 2025, under appeal); advertising-technology cases (a US DOJ ruling on publisher tools and a €3.0B EC self-preferencing fine); and Google Play matters (the Epic Games verdict and a 50-state Attorneys General settlement). It also discloses privacy matters (including a $1.4 billion settlement), patent/IP infringement claims, EU Digital Markets Act investigations, Russia-related matters, and non-income-tax audits. Alphabet says it disputes the open claims and will defend itself vigorously, and that outcomes are inherently unpredictable and could be material."
+    company: GOOGL
+    type: citation
+    expected_route: TEXT
+    relevant: "GOOGL FY2025 financial_statements"
+
+  - question: "What critical audit matters did Amazon's auditors highlight in the most recent filing?"
+    ground_truth: "One critical audit matter: Uncertain Tax Positions. Amazon is subject to income taxes in the U.S. and numerous foreign jurisdictions where the ultimate determination of many tax positions is uncertain, requiring significant judgment to assess whether a position is more likely than not to be sustained and to measure the recognized benefit. As of December 31, 2025, Amazon reported $6.6 billion of accrued liabilities for tax contingencies. Auditing this was especially challenging and subjective, so the auditors tested related controls and involved tax specialists."
+    company: AMZN
+    type: citation
+    expected_route: TEXT
+    relevant: "AMZN FY2025 financial_statements"
+
+  # ============ G. CROSS-COMPANY COMPARISON (5) — retrieval across two filings ============
+  # NOTE: no single-company filter applies; retrieval must surface chunks from BOTH
+  # companies. Hardest category + strongest motivator for query decomposition
+  # (company x year). company: BOTH => the harness searches unfiltered across companies.
+  - question: "Compare Amazon's and Alphabet's total revenue in fiscal 2024."
+    ground_truth: "Amazon's total net sales were $637,959 million and Alphabet's total revenues were $350,018 million in fiscal 2024 — Amazon's were higher (by about $288 billion)."
+    company: BOTH
+    year: "2024"
+    type: cross_company
+    expected_route: TABLE
+    relevant: "AMZN FY2024 financial_statements; GOOGL FY2024 financial_statements"
+
+  - question: "Which grew faster from fiscal 2023 to 2024 — AWS revenue or Google Cloud revenue?"
+    ground_truth: "In percentage terms Google Cloud grew faster: AWS rose from $90,757M to $107,556M (~18.5%), while Google Cloud rose from $33,088M to $43,229M (~30.6%). In absolute dollars AWS grew more (~$16.8B vs ~$10.1B)."
+    company: BOTH
+    type: cross_company
+    expected_route: TABLE
+    relevant: "AMZN FY2024 financial_statements; GOOGL FY2024 financial_statements"
+
+  - question: "Compare Amazon's and Alphabet's net income in fiscal 2024."
+    ground_truth: "Amazon's net income was $59,248 million and Alphabet's was $100,118 million in fiscal 2024 — Alphabet's was higher."
+    company: BOTH
+    year: "2024"
+    type: cross_company
+    expected_route: TABLE
+    relevant: "AMZN FY2024 financial_statements; GOOGL FY2024 financial_statements"
+
+  - question: "Which company reported higher operating cash flow in fiscal 2024 — Amazon or Alphabet?"
+    ground_truth: "Amazon — its fiscal 2024 operating cash flow was $115,877 million versus Alphabet's $101,746 million."
+    company: BOTH
+    year: "2024"
+    type: cross_company
+    expected_route: TABLE
+    relevant: "AMZN FY2024 financial_statements; GOOGL FY2024 financial_statements"
+
+  - question: "What risks related to AI do Amazon and Alphabet each disclose in their most recent 10-Ks, and how do they differ?"
+    ground_truth: "Both disclose AI risks but with different emphasis. Alphabet: AI is highly competitive and rapidly evolving, requires heavy investment (infrastructure, custom TPUs); competitors may build superior or cheaper AI; AI is reshaping advertising in ways it may not adapt to; specialized AI-chip (GPU/TPU) supply is constrained; and AI raises ethical, legal, and regulatory challenges. Amazon: AI facilitates competitive entry and comparison shopping; its AI/ML investments may not recoup their cost; its and its customers' use of AI may increase intellectual-property infringement claims; and it relies on a limited group of suppliers for AI-related semiconductors such as GPUs. In short, Alphabet frames AI around its core search/ads and cloud plus chip supply, while Amazon frames it around competition, investment payoff, IP, and component supply."
+    company: BOTH
+    type: cross_company
+    expected_route: TEXT
+    relevant: "GOOGL FY2025 risk_factors; AMZN FY2025 risk_factors"

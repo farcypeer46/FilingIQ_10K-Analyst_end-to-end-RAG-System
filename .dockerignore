@@ -1,0 +1,29 @@
+# Keep the image lean and secret-free. Everything here is excluded from the
+# build context, so it never lands in the image.
+
+# secrets — the API key is injected as an env var at runtime, never baked in
+.env
+*.env
+
+# local Python env + caches
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# raw filings + intermediate corpus — only needed to BUILD the index, not to
+# serve it. The prebuilt chroma_db/ is copied explicitly in the Dockerfile.
+# EXCEPTION: the Engine 2 table store IS a serving artifact and must ship.
+data/
+!data/tables.db
+
+# eval + tooling artifacts, docs, VCS, scratch
+evaluation/results.json
+*.log
+.git/
+.gitignore
+.github/
+README.md
+CLAUDE.md
+.DS_Store

@@ -1,0 +1,359 @@
+# FROZEN TEST golden set — AAPL, MSFT, NVDA ONLY (never the dev companies AMZN/GOOGL).
+#
+# This set is TOUCHED ONCE, at the end, on the frozen system. Ground truths are
+# verified against the ACTUAL filings (pasted by the user), NOT against our index.
+#
+#   ground_truth: ""      -> ANSWERABLE, still TO FILL (needs the filing figure/text).
+#   ground_truth: REFUSE  -> the system MUST refuse.
+#   relevant: "COMPANY FYyyyy section"  -> source label for Hit@k/MRR.
+#   expected_route: TEXT | TABLE | HYBRID  -> Traffic-Cop ground truth.
+#
+# Category counts mirror the dev set (10/10/8/9/5/3/5) for apples-to-apples TEST-vs-dev.
+
+questions:
+
+  # ============ A. SIMPLE FACTUAL (10) — TEXT ============
+  - question: "What are Apple's main product and service categories?"
+    ground_truth: "Products: iPhone; Mac; iPad; and Wearables, Home and Accessories (Apple Watch, AirPods, Beats, Apple Vision Pro, Apple TV, HomePod). Services: Advertising; AppleCare; Cloud Services; Digital Content (App Store, Apple Arcade, Apple Music, Apple TV+, Apple News+, Apple Fitness+); and Payment Services (Apple Card, Apple Pay)."
+    company: AAPL
+    type: factual
+    expected_route: TEXT
+    relevant: "AAPL FY2024 business"
+
+  - question: "What does Apple identify as risks related to its dependence on third-party manufacturing and suppliers?"
+    ground_truth: "Apple depends on outsourcing partners located primarily in China mainland, India, Japan, South Korea, Taiwan and Vietnam for component manufacturing and final assembly of substantially all its hardware, with a significant concentration performed by a small number of partners, often in single locations. Outsourcing reduces Apple's direct control over production and distribution, which can adversely affect the cost, quality, quantity, or timeliness of products. It relies on single-source partners for many components; risks include partner failures or disruptions (natural disasters, IT failures, disputes, geopolitical tensions), supplier code-of-conduct violations, and warranty/product-defect liabilities for which Apple remains responsible to the consumer."
+    company: AAPL
+    type: factual
+    expected_route: TEXT
+    relevant: "AAPL FY2024 risk_factors"
+
+  - question: "How does Microsoft describe its three business segments?"
+    ground_truth: "Microsoft reports in three segments: (1) Productivity and Business Processes — Microsoft 365 Commercial and Consumer (Office, Microsoft 365 Copilot, Teams, Exchange, SharePoint), LinkedIn, and Dynamics 365; (2) Intelligent Cloud — server products and cloud services including Azure and other cloud services, plus Enterprise and partner services; and (3) More Personal Computing — Windows and Devices (Windows OEM, Surface), Gaming (Xbox hardware, content and services, Game Pass), and Search and news advertising (Bing, Copilot, Edge)."
+    company: MSFT
+    type: factual
+    expected_route: TEXT
+    relevant: "MSFT FY2025 business"
+
+  - question: "What risks does Microsoft cite related to cybersecurity?"
+    ground_truth: "Microsoft warns that cyberattacks and security vulnerabilities could reduce revenue, increase costs, create liability, and harm its reputation or competitive position. Threats come from sophisticated actors including nation-states, state-sponsored groups, and cybercriminals using malware, exploitation of known/zero-day vulnerabilities, and social engineering; Microsoft discloses it has experienced incidents, including a nation-state password-spray attack beginning late November 2023 that accessed corporate email and some source-code repositories. It also cites risks to the security of its products, services, and customers' data (including unpatched/end-of-life systems), disclosure or misuse of personal data, supply-chain compromise, and new attack surfaces created by generative AI."
+    company: MSFT
+    type: factual
+    expected_route: TEXT
+    relevant: "MSFT FY2025 risk_factors"
+
+  - question: "What does NVIDIA say about its dependence on TSMC and third-party foundries?"
+    ground_truth: "NVIDIA uses a fabless manufacturing model, partnering with suppliers for wafer fabrication, assembly, testing, and packaging. It relies on foundries — Taiwan Semiconductor Manufacturing Company (TSMC) and Samsung — to produce its semiconductor wafers, uses CoWoS technology for packaging, purchases memory from SK Hynix, Micron, and Samsung, and engages contract manufacturers such as Hon Hai (Foxconn), Wistron, and Fabrinet for assembly, testing, and packaging. Its supply chain is mainly concentrated in the Asia-Pacific region, and in periods of growth it may place non-cancellable orders, pay premiums, or provide deposits to secure supply and capacity."
+    company: NVDA
+    type: factual
+    expected_route: TEXT
+    relevant: "NVDA FY2025 business"
+
+  - question: "What are NVIDIA's reportable segments?"
+    ground_truth: "NVIDIA reports its business in two segments: Compute & Networking (Data Center accelerated-computing platforms and AI solutions/software; networking such as Quantum InfiniBand and Spectrum Ethernet; NVIDIA DRIVE automotive/autonomous and EV solutions; Jetson robotics and embedded platforms; and DGX Cloud software and services) and Graphics (GeForce GPUs for gaming and PCs; GeForce NOW cloud gaming; Quadro/NVIDIA RTX enterprise workstation GPUs; virtual GPU (vGPU) software; automotive infotainment platforms; and Omniverse Enterprise software)."
+    company: NVDA
+    type: factual
+    expected_route: TEXT
+    relevant: "NVDA FY2025 business"
+
+  - question: "What does Apple say about competition in its markets?"
+    ground_truth: "Apple's markets are highly competitive, characterized by aggressive price competition and downward pressure on gross margins, frequent new-product introductions, short product life cycles, evolving industry standards, rapid technological change, and price sensitivity. Many competitors compete through aggressive pricing and very low cost structures and by imitating Apple's products and infringing its IP; some provide products at little or no profit. Principal competitive factors include price, product/service features (incl. security), relative price and performance, quality and reliability, design innovation, a strong third-party ecosystem, marketing and distribution, service and support, and reputation. Apple holds a minority market share in the global smartphone, personal computer, and tablet markets, and its services also face substantial competition (including free-content business models)."
+    company: AAPL
+    type: factual
+    expected_route: TEXT
+    relevant: "AAPL FY2024 business"
+
+  - question: "What risks does NVIDIA disclose related to export controls on sales to China?"
+    ground_truth: "NVIDIA discloses that it has been subject to shifting and expanding U.S. export controls affecting sales to China. Beginning in fiscal 2023 the U.S. government imposed licensing requirements on exports to China (and Russia) of its A100 and H100 GPUs and systems; in October 2023 it expanded and updated the requirements (effective Q4 FY2024) to cover more products (e.g., A100, A800, H100, H800, L4, L40, L40S, RTX 4090) and additional country groups including China and Country Groups D1/D4/D5; and on January 15, 2025 the 'AI Diffusion' interim final rule introduced a worldwide licensing requirement on covered products (including future ICs and systems such as DGX/HGX/MGX and Blackwell). NVIDIA states it has not received licenses to ship the restricted products to China, that its competitive position has been harmed, and that further changes could effectively exclude it from all or part of the China market."
+    company: NVDA
+    type: factual
+    expected_route: TEXT
+    relevant: "NVDA FY2025 risk_factors"
+
+  - question: "How does Microsoft describe the role of AI across its products?"
+    ground_truth: "Microsoft describes AI as fundamentally transforming productivity for every individual, organization, and industry, with AI offerings spanning every layer of its technology stack and a commitment to deploying AI responsibly with safety and security. AI is embedded across products: Microsoft 365 Copilot and the Copilot stack for productivity; Azure AI (supercomputing at scale, Azure AI Foundry/Studio, custom silicon such as Azure Maia/Cobalt, and the OpenAI partnership) in Intelligent Cloud; GitHub Copilot for developers; Copilot for Security; Nuance healthcare/ambient AI; Dynamics 365 agentic AI; and Copilot in Windows, the Edge browser, and the Bing search engine."
+    company: MSFT
+    type: factual
+    expected_route: TEXT
+    relevant: "MSFT FY2024 business"
+
+  - question: "What does Apple disclose about its supply chain concentration risk?"
+    ground_truth: "Apple obtains certain critical components from single or limited sources, and new products often use custom components available from only one source, exposing it to significant supply and pricing risk — including industry-wide shortages and commodity price fluctuations (e.g., the global semiconductor industry). Substantially all manufacturing and assembly is concentrated with a small number of outsourcing partners located primarily in China mainland, India, Japan, South Korea, Taiwan and Vietnam, often in single locations. Because it relies on single or limited sources for the supply and manufacture of many critical components, a business interruption affecting those sources would exacerbate the negative consequences to the Company."
+    company: AAPL
+    type: factual
+    expected_route: TEXT
+    relevant: "AAPL FY2024 risk_factors"
+
+  # ============ B. NUMERIC EXACT-MATCH (10) — TABLE ============
+  - question: "What was Apple's total net sales in fiscal 2024?"
+    ground_truth: "Apple's total net sales in fiscal 2024 were $391,035 million."
+    company: AAPL
+    year: "2024"
+    type: numeric
+    expected_route: TABLE
+    relevant: "AAPL FY2024 financial_statements"
+
+  - question: "What was Apple's net income in fiscal 2024?"
+    ground_truth: "Apple's net income in fiscal 2024 was $93,736 million."
+    company: AAPL
+    year: "2024"
+    type: numeric
+    expected_route: TABLE
+    relevant: "AAPL FY2024 financial_statements"
+
+  - question: "What was Microsoft's total revenue in fiscal 2024?"
+    ground_truth: "Microsoft's total revenue in fiscal 2024 (ended June 30, 2024) was $245,122 million."
+    company: MSFT
+    year: "2024"
+    type: numeric
+    expected_route: TABLE
+    relevant: "MSFT FY2024 financial_statements"
+
+  - question: "What was Microsoft's operating income in fiscal 2024?"
+    ground_truth: "Microsoft's operating income in fiscal 2024 was $109,433 million."
+    company: MSFT
+    year: "2024"
+    type: numeric
+    expected_route: TABLE
+    relevant: "MSFT FY2024 financial_statements"
+
+  - question: "What was NVIDIA's total revenue in fiscal 2025?"
+    ground_truth: "NVIDIA's total revenue in fiscal 2025 (ended January 26, 2025) was $130,497 million."
+    company: NVDA
+    year: "2025"
+    type: numeric
+    expected_route: TABLE
+    relevant: "NVDA FY2025 financial_statements"
+
+  - question: "What was NVIDIA's net income in fiscal 2025?"
+    ground_truth: "NVIDIA's net income in fiscal 2025 (ended January 26, 2025) was $72,880 million."
+    company: NVDA
+    year: "2025"
+    type: numeric
+    expected_route: TABLE
+    relevant: "NVDA FY2025 financial_statements"
+
+  - question: "What was Apple's Services revenue in fiscal 2024?"
+    ground_truth: "Apple's Services net sales in fiscal 2024 were $96,169 million."
+    company: AAPL
+    year: "2024"
+    type: numeric
+    expected_route: TABLE
+    relevant: "AAPL FY2024 financial_statements"
+
+  - question: "What was Microsoft's Intelligent Cloud segment revenue in fiscal 2024?"
+    ground_truth: "Microsoft's Intelligent Cloud segment revenue in fiscal 2024 was $87,464 million (recast segment basis, as presented in the FY2025 10-K; the original FY2024 10-K reported Intelligent Cloud on a different, pre-recast basis)."
+    company: MSFT
+    year: "2024"
+    type: numeric
+    expected_route: TABLE
+    relevant: "MSFT FY2024 financial_statements"
+
+  - question: "What was Apple's operating cash flow in fiscal 2024?"
+    ground_truth: "Apple's cash generated by operating activities in fiscal 2024 was $118,254 million."
+    company: AAPL
+    year: "2024"
+    type: numeric
+    expected_route: TABLE
+    relevant: "AAPL FY2024 financial_statements"
+
+  # ============ C. COMPARISON / MULTI-YEAR (8) ============
+  - question: "How did Apple's total net sales change from fiscal 2023 to fiscal 2024?"
+    ground_truth: "Apple's total net sales rose from $383,285 million in fiscal 2023 to $391,035 million in fiscal 2024, an increase of about $7,750 million (~2%)."
+    company: AAPL
+    type: comparison
+    expected_route: TABLE
+    relevant: "AAPL FY2024 financial_statements"
+
+  - question: "Compare Microsoft's revenue in fiscal 2023 vs fiscal 2024."
+    ground_truth: "Microsoft's total revenue rose from $211,915 million in fiscal 2023 to $245,122 million in fiscal 2024, an increase of about $33,207 million (~16%)."
+    company: MSFT
+    type: comparison
+    expected_route: TABLE
+    relevant: "MSFT FY2024 financial_statements"
+
+  - question: "How did Apple's Services revenue grow across fiscal 2023, 2024, and 2025?"
+    ground_truth: "Apple's Services net sales grew from $85,200 million in fiscal 2023 to $96,169 million in fiscal 2024 to $109,158 million in fiscal 2025."
+    company: AAPL
+    type: comparison
+    expected_route: TABLE
+    relevant: "AAPL FY2025 financial_statements"
+
+  - question: "Did NVIDIA's gross margin increase or decrease from fiscal 2024 to fiscal 2025?"
+    ground_truth: "NVIDIA's gross margin increased, from 72.7% in fiscal 2024 to 75.0% in fiscal 2025 (up about 2.3 percentage points)."
+    company: NVDA
+    type: comparison
+    expected_route: TABLE
+    relevant: "NVDA FY2025 financial_statements"
+
+  - question: "Why did NVIDIA's revenue grow so sharply between fiscal 2023 and fiscal 2025?"
+    ground_truth: "NVIDIA's revenue grew explosively — from $26,974 million in fiscal 2023 to $60,922 million in fiscal 2024 to $130,497 million in fiscal 2025 (roughly 4.8x over two years). The surge was driven primarily by demand for its Data Center accelerated-computing and AI platforms: sharply higher shipments of the Hopper GPU platform (e.g., H100) for training and inference of large language models and generative AI, strong growth in networking (InfiniBand), and then the ramp of the new Blackwell platform, as cloud providers and enterprises built out AI infrastructure."
+    company: NVDA
+    type: comparison
+    expected_route: HYBRID
+    relevant: "NVDA FY2025 mda"
+
+  - question: "How did Microsoft's discussion of AI-related risks change between its 2023 and 2025 filings?"
+    ground_truth: "Microsoft's AI-related risk discussion expanded substantially by fiscal 2025. The FY2025 10-K details risks that AI algorithms or training methodologies may be flawed, datasets may be biased or inaccurate, and AI-generated content may be offensive, illegal, inaccurate, or harmful; it flags legal liability, IP and data-privacy claims, an evolving regulatory landscape (e.g., the EU AI Act), agentic AI systems that can act autonomously (requiring human review), new cybersecurity attack surfaces from generative AI, and AI export-control/AI-diffusion-rule risks. This is a broader, more detailed treatment than the comparatively brief, nascent AI-risk discussion in the fiscal 2023 filing."
+    company: MSFT
+    type: comparison
+    expected_route: TEXT
+    relevant: "MSFT FY2025 risk_factors"
+
+  - question: "Why did Apple's Greater China net sales decline in fiscal 2024?"
+    ground_truth: "Apple's Greater China net sales fell from $72,559 million in fiscal 2023 to $66,952 million in fiscal 2024, a decline of about $5,607 million (~8%). Apple attributes the Greater China weakness primarily to lower net sales of iPhone."
+    company: AAPL
+    year: "2024"
+    type: comparison
+    expected_route: HYBRID
+    relevant: "AAPL FY2024 mda"
+
+  # ============ D. REFUSAL — genuinely not in the filings (9) ============
+  - question: "What was Apple's iPhone unit sales volume in fiscal 2024?"
+    ground_truth: "REFUSE"
+    company: AAPL
+    type: refuse
+    relevant: ""
+
+  - question: "What is Microsoft's projected revenue for fiscal 2027?"
+    ground_truth: "REFUSE"
+    company: MSFT
+    type: refuse
+    relevant: ""
+
+  - question: "What did NVIDIA's CEO say at the most recent GTC keynote?"
+    ground_truth: "REFUSE"
+    company: NVDA
+    type: refuse
+    relevant: ""
+
+  - question: "What is Apple's current stock price?"
+    ground_truth: "REFUSE"
+    company: AAPL
+    type: refuse
+    relevant: ""
+
+  - question: "How many Xbox consoles did Microsoft sell in fiscal 2024?"
+    ground_truth: "REFUSE"
+    company: MSFT
+    type: refuse
+    relevant: ""
+
+  - question: "What was Intel's revenue in fiscal 2024?"
+    ground_truth: "REFUSE"
+    company: MSFT
+    type: refuse
+    relevant: ""
+
+  - question: "What compensation does Apple's CEO receive?"
+    ground_truth: "REFUSE"
+    company: AAPL
+    type: refuse
+    relevant: ""
+
+  - question: "What did Microsoft's Q2 fiscal 2025 earnings call reveal about Copilot adoption?"
+    ground_truth: "REFUSE"
+    company: MSFT
+    type: refuse
+    relevant: ""
+
+  - question: "What acquisitions is NVIDIA currently negotiating?"
+    ground_truth: "REFUSE"
+    company: NVDA
+    type: refuse
+    relevant: ""
+
+  # ============ E. ADVERSARIAL / TRAPS (5) ============
+  - question: "What was Apple's net sales in fiscal 2020?"
+    ground_truth: "REFUSE"
+    company: AAPL
+    type: adversarial
+    relevant: ""
+
+  - question: "What was NVIDIA's revenue in fiscal 2021?"
+    ground_truth: "REFUSE"
+    company: NVDA
+    type: adversarial
+    relevant: ""
+
+  # #40 — the false-premise test (direct analog of the AWS gap). Answerable: correct the premise.
+  - question: "Why did Microsoft's Intelligent Cloud segment lose money in fiscal 2024?"
+    ground_truth: "False premise — Microsoft's Intelligent Cloud segment did NOT lose money in fiscal 2024. It was highly profitable, with segment operating income of about $37,813 million on revenue of $87,464 million (recast basis)."
+    company: MSFT
+    year: "2024"
+    type: adversarial
+    expected_route: HYBRID
+    relevant: "MSFT FY2024 financial_statements"
+
+  - question: "What did Apple say about discontinuing the iPhone in its 10-K?"
+    ground_truth: "REFUSE"
+    company: AAPL
+    type: adversarial
+    relevant: ""
+
+  - question: "hey so i was wondering if you could tell me the total amount of revenue that Microsoft the company brought in during their fiscal year 2024 across everything"
+    ground_truth: "Microsoft's total revenue in fiscal 2024 was $245,122 million."
+    company: MSFT
+    year: "2024"
+    type: adversarial
+    expected_route: TABLE
+    relevant: "MSFT FY2024 financial_statements"
+
+  # ============ F. SECTION-SPECIFIC CITATION (3) — TEXT ============
+  - question: "According to Item 7A, what market risks is Apple exposed to?"
+    ground_truth: "In Item 7A, Apple discloses two market risks: (1) Interest rate risk — U.S. interest-rate fluctuations affect the fair value of its investment portfolio and the interest expense on its term debt (a hypothetical 100 bps increase would cut investment-portfolio fair value by about $2,416 million and raise annual term-debt interest expense by about $129 million as of FY2025); and (2) Foreign exchange rate risk — as a net receiver of non-U.S. currencies, a strengthening U.S. dollar negatively affects net sales and gross margins, with a value-at-risk model estimating a maximum one-day loss of about $590 million on its foreign-currency derivative positions. Apple may use derivative instruments to manage both."
+    company: AAPL
+    type: citation
+    expected_route: TEXT
+    relevant: "AAPL FY2025 market_risk"
+
+  - question: "What does Microsoft disclose about legal proceedings?"
+    ground_truth: "Microsoft discloses that it is subject to a variety of claims, lawsuits, and regulatory proceedings arising in the ordinary course of business. A specific matter it highlights is the Irish Data Protection Commission (IDPC) investigation of LinkedIn over whether its targeted-advertising practices violated the EU GDPR; in October 2024 the IDPC issued a final decision alleging GDPR violations and assessing a fine, which LinkedIn appealed in November 2024 (next hearing scheduled December 2025). As of June 30, 2025, Microsoft had accrued aggregate legal liabilities of $541 million and disclosed that reasonably possible losses beyond recorded amounts could reach approximately $600 million."
+    company: MSFT
+    type: citation
+    expected_route: TEXT
+    relevant: "MSFT FY2025 financial_statements"
+
+  - question: "What critical audit matters did NVIDIA's auditors highlight in the most recent filing?"
+    ground_truth: "NVIDIA's independent auditor, PricewaterhouseCoopers LLP, highlighted one critical audit matter: the Valuation of Inventories — specifically the provisions for excess or obsolete inventories and excess product purchase commitments. It was deemed critical because of the significant management judgment involved in estimating future demand and market conditions (including the impact of regulatory export restrictions). As of January 25, 2026, NVIDIA's inventory balance was $21.4 billion and its outstanding inventory purchase and long-term supply and capacity obligations were $95.2 billion."
+    company: NVDA
+    type: citation
+    expected_route: TEXT
+    relevant: "NVDA FY2026 financial_statements"
+
+  # ============ G. CROSS-COMPANY (5) ============
+  - question: "Compare Apple's and Microsoft's total revenue in fiscal 2024."
+    ground_truth: "In fiscal 2024, Apple's total net sales were $391,035 million versus Microsoft's total revenue of $245,122 million, so Apple's was higher. Note the two fiscal years cover different 12-month periods: Apple's FY2024 ended September 28, 2024 while Microsoft's ended June 30, 2024."
+    company: BOTH
+    year: "2024"
+    type: cross_company
+    expected_route: TABLE
+    relevant: "AAPL FY2024 financial_statements; MSFT FY2024 financial_statements"
+
+  - question: "Which grew faster from fiscal 2023 to 2024 — Microsoft's Intelligent Cloud revenue or Apple's Services revenue?"
+    ground_truth: "Microsoft's Intelligent Cloud revenue grew faster. Intelligent Cloud revenue rose from $72,944 million (FY2023) to $87,464 million (FY2024), about 20%, while Apple's Services revenue grew from $85,200 million to $96,169 million, about 13%."
+    company: BOTH
+    type: cross_company
+    expected_route: TABLE
+    relevant: "MSFT FY2024 financial_statements; AAPL FY2024 financial_statements"
+
+  - question: "Compare Apple's and NVIDIA's net income in their most recent fiscal years."
+    ground_truth: "In their most recent fiscal years, Apple's net income was $112,010 million (FY2025, ended September 27, 2025) and NVIDIA's net income was $72,880 million (FY2025, ended January 26, 2025), so Apple's net income was higher."
+    company: BOTH
+    type: cross_company
+    expected_route: TABLE
+    relevant: "AAPL FY2025 financial_statements; NVDA FY2025 financial_statements"
+
+  - question: "Which company reported higher R&D expense in fiscal 2024 — Microsoft or Apple?"
+    ground_truth: "Apple reported higher R&D expense in fiscal 2024: Apple's research and development was $31,370 million versus Microsoft's $29,510 million."
+    company: BOTH
+    year: "2024"
+    type: cross_company
+    expected_route: TABLE
+    relevant: "MSFT FY2024 financial_statements; AAPL FY2024 financial_statements"
+
+  - question: "What risks related to reliance on China do Apple and NVIDIA each disclose, and how do they differ?"
+    ground_truth: "Both disclose significant China-related risks, but of different kinds. Apple's is operational and market-based: a majority of its manufacturing is concentrated with outsourcing partners in China mainland (and other Asian countries) and Greater China is a major sales market, so tariffs, trade restrictions, and U.S.-China tensions threaten its supply chain and demand. NVIDIA's is primarily regulatory/export-control: U.S. government licensing requirements (2022-2025, including the 'AI Diffusion' rule) restrict sales of its advanced GPUs (A100/H100/H800/Blackwell, etc.) to China, and NVIDIA states it has not received licenses to ship restricted products there, harming its competitive position and potentially excluding it from the China market; its supply chain is also concentrated in the Asia-Pacific region."
+    company: BOTH
+    type: cross_company
+    expected_route: TEXT
+    relevant: "AAPL FY2024 risk_factors; NVDA FY2025 risk_factors"
