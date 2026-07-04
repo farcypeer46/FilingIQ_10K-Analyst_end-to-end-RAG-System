@@ -12,10 +12,10 @@ flowchart TB
         PARSE -->|"prose + deterministic captions"| CHUNK --> EMB
     end
 
-    subgraph STORE["STORAGE LAYER — shared, single source of truth"]
+    subgraph STORE["STORAGE LAYER — two independent stores, one source of truth"]
         direction LR
         SQL[("Relational Store<br/>SQLite · financial_metrics")]
-        VDB[("Vector + Lexical Index<br/>ChromaDB · BM25")]
+        VDB[("Vector Store<br/>ChromaDB · persistent")]
     end
 
     subgraph SVC["QUERY SERVICE — online · real-time"]
@@ -25,7 +25,7 @@ flowchart TB
         CACHE["Semantic Answer Cache<br/><i>Cost &amp; latency layer</i>"]
         ROUTER{{"Query Router<br/>intent → Structured / Semantic / Hybrid"}}
         SDE["Structured Data Engine<br/><i>Deterministic SQL retrieval</i>"]
-        TRE["Text Retrieval Engine<br/><i>Hybrid · RRF · re-ranking · self-query</i>"]
+        TRE["Text Retrieval Engine<br/><i>Dense (Chroma) + sparse (BM25, in-memory)<br/>RRF fusion · cross-encoder re-ranking · self-query</i>"]
         SYN["Grounded Answer Synthesis<br/><i>LLM · reasons over retrieved evidence only</i>"]
         RESP["Response<br/><i>Answer · citations · or refusal</i>"]
         USR --> RW --> CACHE --> ROUTER
@@ -40,7 +40,7 @@ flowchart TB
     PARSE ==>|"structured records"| SQL
     EMB ==>|"embeddings"| VDB
     SDE -.->|"exact cell lookup"| SQL
-    TRE -.->|"top-k retrieval"| VDB
+    TRE -.->|"dense top-k"| VDB
 
     NOTE["Financial figures originate only from the Relational Store — never the LLM.<br/>Every claim is cited; the system refuses when evidence is insufficient."]
     SYN -.-> NOTE
