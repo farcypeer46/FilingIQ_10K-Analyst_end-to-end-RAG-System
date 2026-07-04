@@ -1,38 +1,49 @@
 ```mermaid
-flowchart TB
-    subgraph OFFLINE["INGESTION · offline, run once"]
+%%{init: {'theme':'base','themeVariables':{'fontFamily':'Arial, Helvetica, sans-serif','lineColor':'#667085','clusterBkg':'#FBFCFD','clusterBorder':'#D0D5DD','fontSize':'13px'}}}%%
+flowchart LR
+    U(["Client · question + chat history"])
+
+    subgraph APP["APPLICATION LAYER · FastAPI"]
         direction TB
-        RAW["SEC EDGAR 10-K HTML"] --> CLEAN["Strip hidden XBRL<br/>Detect Item sections (1, 1A, 7, 7A, 8)"]
-        CLEAN --> PARSE["Canonical table parse · tables.py<br/><b>single source of truth</b>"]
-        CLEAN --> CHUNK["Token-aware prose chunking<br/>+ company / year / section tags"]
-        PARSE -->|"markdown + deterministic caption"| CHUNK
-        CHUNK --> EMB["bge-small-en embeddings"]
+        RW["Query rewriter<br/><span>conversational memory</span>"]
+        CACHE["Semantic cache<br/><span>cost layer</span>"]
+        ROUTER{{"Traffic Cop router<br/>TEXT · TABLE · HYBRID"}}
+        GEN["Answer generator<br/><span>grounded · cited · refuses</span>"]
+        RW --> CACHE --> ROUTER
     end
 
-    PARSE ==>|"exact records"| DB[("Engine 2 · SQLite<br/>financial_metrics")]
-    EMB  ==>|"vectors + BM25"| VEC[("Engine 1 · ChromaDB + BM25")]
-
-    subgraph ONLINE["QUERY · online, per request"]
+    subgraph RET["RETRIEVAL"]
         direction TB
-        Q["User question + chat history"] --> RW["Memory · query rewriter<br/>follow-up → standalone question"]
-        RW --> CACHE{"Semantic cache<br/>hit?"}
-        CACHE -->|"miss"| COP{"Traffic Cop<br/>router"}
-        COP -->|"TABLE"| L2["Exact SQL lookup"]
-        COP -->|"TEXT"| L1["Self-query → dense + BM25<br/>→ RRF → cross-encoder rerank"]
-        COP -->|"HYBRID"| L2
-        COP -->|"HYBRID"| L1
-        L1 --> GEN["Grounded generation<br/>cited · refuses when unsupported"]
-        L2 --> GEN
-        GEN --> ANS["Answer + citations / refusal"]
+        E1["Engine 1 — Text<br/><span>self-query · dense+BM25 · RRF · rerank</span>"]
+        E2["Engine 2 — Tables<br/><span>exact SQL lookup</span>"]
     end
 
-    L2 -. reads .-> DB
-    L1 -. reads .-> VEC
-    CACHE -->|"hit"| ANS
-    GEN -. stores .-> CACHE
+    subgraph DATA["DATA STORES"]
+        direction TB
+        VEC[("Vector store<br/>ChromaDB + BM25")]
+        SQL[("SQL store<br/>SQLite · financial_metrics")]
+    end
 
-    classDef store fill:#0A2540,stroke:#0FB5A6,color:#ffffff,stroke-width:2px;
-    classDef eng   fill:#E6FAF7,stroke:#0C8F84,color:#04302c;
-    class DB,VEC store;
-    class L1,L2,COP eng;
+    subgraph ING["INGESTION · offline, run once"]
+        direction TB
+        SRC["SEC EDGAR 10-K HTML"] --> PARSE["Canonical table parser<br/><span>single source of truth</span>"]
+    end
+
+    U --> RW
+    ROUTER --> E1 & E2
+    E1 --> VEC
+    E2 --> SQL
+    E1 --> GEN
+    E2 --> GEN
+    GEN --> U
+    PARSE -.->|write| SQL
+    PARSE -.->|write| VEC
+
+    classDef default fill:#F2F4F7,stroke:#98A2B3,color:#101828,stroke-width:1px;
+    classDef store fill:#EAECF0,stroke:#667085,color:#101828;
+    classDef accent fill:#1D2939,stroke:#1D2939,color:#FFFFFF;
+    classDef engine fill:#E7EDF5,stroke:#3E5C82,color:#101828;
+    class VEC,SQL store;
+    class ROUTER,GEN accent;
+    class E1,E2 engine;
 ```
