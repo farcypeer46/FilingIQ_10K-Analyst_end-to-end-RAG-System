@@ -21,32 +21,37 @@ served on **FastAPI** and kept honest by automated **RAGAS evaluation gated in C
 ---
 
 ## Contents
-- [The problem](#the-problem)
-- [Try it](#try-it)
+
+- [The Problem](#the-problem)
+- [Live Demo](#live-demo)
 - [Architecture](#architecture)
-- [Evaluation & results](#evaluation--results)
-- [Why each decision](#why-each-decision)
-- [Product layer: memory & cache](#product-layer-memory--cache)
-- [Tech stack](#tech-stack)
-- [Run it locally](#run-it-locally)
-- [Project structure](#project-structure)
-- [Deployment](#deployment)
-- [Scaling to production](#scaling-to-production)
-- [Limitations & what's next](#limitations--whats-next)
+- [Evaluation & Results](#evaluation--results)
+- [Design Decisions](#design-decisions)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [Deployment & Scaling](#deployment--scaling)
+- [Limitations & Roadmap](#limitations--roadmap)
 
 ---
 
-## The problem
+## The Problem
 
-Numbers do not belong in a vector search. Ask a vector store *"net income in 2025?"* and it may
-return **2024's** number, because the surrounding text is near-identical — and in finance a
-near-miss is a total failure. Meanwhile, a plain LLM will happily **fabricate** a figure that
-looks plausible but appears in no filing.
+**Numbers don't belong in a vector search.** Ask a vector store *"What was net income in 2025?"*
+and it may confidently return **2024's figure** because the surrounding text is nearly identical, and
+embeddings can't tell the difference. In finance, a near-miss is not a partial success; it's a
+wrong answer with a citation attached. Worse, a plain LLM will simply **fabricate** a plausible
+figure that appears in no filing at all.
 
-FilingIQ separates the two problems it was conflating: **deterministic data** (exact numbers)
-and **linguistic context** (risks, strategy, commentary). Numbers come from a structured store
-by exact key; prose comes from semantic search; a router sends each question to the right one —
-and the system **refuses** rather than guess.
+The root cause: naive RAG treats two fundamentally different problems as one.
+**Deterministic data** (exact figures, where there is precisely one right answer) and
+**linguistic context** (risks, strategy, commentary, where meaning matters more than exactness)
+fail in different ways and need different retrieval.
+
+FilingIQ separates them. Numbers are answered by **exact-key lookup** against a validated
+structured store and the LLM never generates a figure, only explains one. Prose is answered by
+**semantic search** over the filings, every claim cited. A deterministic router dispatches each
+question to the right engine — and when neither engine finds support, the system **refuses**
+instead of guessing.
 
 ## Try it
 
