@@ -1,7 +1,7 @@
 # FilingIQ
-### Advanced RAG over SEC 10-K Filings, Powered by a Dual-Engine Architecture
+### Advanced RAG system built over SEC 10-K Filings, Powered by a Dual-Engine Architecture
 
-Trusted financial Q&A system built over real SEC 10-K filings of last 3 years from 5 major
+Trusted financial Q&A RAG system built over real SEC 10-K filings of last 3 years from 5 major
 companies. Ask a question in plain English and FilingIQ pulls the *exact* figure from a
 validated table store, grounds every claim in a citation, and **refuses** when the filings
 don't support an answer or the evidence is uncertain, **zero hallucinated citations across
@@ -93,14 +93,14 @@ SQL lookup `(NVDA, FY2025, TOTAL_REVENUE)` → exact cell retrieved → the LLM 
 
 ## Evaluation & Results
 
-The evaluation harness is the core of this project — *"production-grade" and "measured" are
-the same thing.* **Methodology firewall:** all development and tuning happened on
-**Amazon & Alphabet** (dev set, 49-question golden set). **Apple, Microsoft & NVIDIA**
-(36 answerable + 12 must-refuse questions) were held out entirely and **measured once**, on
-the frozen system.
+The evaluation harness is the core of this project. A system whose performance is never
+measured is a system whose claims can't be trusted, So every capability claimed here is
+backed by a number. 
+**Methodology firewall:** all development and tuning happened on
+**Amazon & Alphabet**. **Apple, Microsoft & NVIDIA**
+were held out entirely and **measured once**,
+on the frozen system.
 
-> All numbers are from `evaluation/results_*.json`. Regenerate with
-> `python evaluation/evaluate.py --golden evaluation/golden_set.yaml`.
 
 ### Results by category
 
@@ -119,103 +119,89 @@ the frozen system.
 | **Numeric** | Exact-match | the exact figure is correct | 0.80 | **0.67** |
 | **Operational** | Latency (p50) | responsive under load | ~1.9 s | **~3.0 s** |
 
-*Held-out is the honest number — measured once, on companies the system was never tuned against.*
+*Held-out is measured once, on companies and then system was never tuned against.*
 
 **Zero hallucinated citations and zero missed refusals on filings the system was never tuned
-against.** In finance, those are the two failures you can't recover from — and they held.
+against.** In finance, those are the two failures you can't recover from and they held.
 
-### Dev → held-out generalization
+## Design Decisions
 
-Numeric exact-match was **0.80 in-sample vs 0.67 held-out** — an honest gap, driven by
-table-parse recall on filing formats the parser hadn't seen
-(see [Limitations](#limitations--whats-next)).
+Every architectural choice below exists for a measured reason, and knowing when *not* to add
+complexity is part of the design.
 
-Two deltas worth explaining rather than hiding:
+- **Dual engine, not one vector store.** Exact numeric retrieval needs deterministic keys, not
+  cosine similarity and year-over-year filing text is near-identical, so a single vector store
+  will return the wrong year's number confidentely.
+- **SQLite as the table store.** A real relational store gives exact lookup, multi-year
+  stitching, and cell-level provenance so every figure is click-to-source.
+- **Numbers never originate from the LLM.** Every figure traces to a real filing cell.
+  Ingestion captions are *deterministic* and built from parsed values, so nothing fabricated
+  can enter the index.
+- **Rule-based router.** Deterministic, free, and unit-testable, it cannot stochastically
+  misroute. Routing accuracy is a *measured* metric (0.97 on held-out).
+- **Hybrid retrieval + RRF.** Dense retrieval catches meaning; BM25 catches exact terms
+  (tickers, "Item 7A", line items). Reciprocal Rank Fusion combines both rankings.
+- **Cross-encoder reranking.** The single biggest precision lever on the text side so it reads
+  query and passage jointly rather than comparing compressed embeddings.
+- **`bge-small-en-v1.5` embeddings.** Strong quality-for-size, runs locally at zero cost, and
+  is baked into the Docker image for fast cold starts.
+- **Refusal as a verbatim sentinel.** "Refuse when unsupported" is machine-checkable in the
+  eval harness — not a vibe.
+- **Deliberately not an agent.** FilingIQ is a grounded RAG system with rule-based routing
+  *on purpose*. Restraint is a design decision, not a limitation.
 
-- **Several retrieval metrics are *higher* on held-out than dev.** Dev is depressed by a known
-  section-labeling bug on Amazon (Item 1/1A content collapses into a generic label — see
-  Limitations), not by inflated held-out performance.
-- **Held-out p50 latency (~3.0 s vs ~1.9 s).** More held-out queries take the TABLE→TEXT
-  fallback path on unfamiliar table formats, adding a second retrieval pass.
+### Product layer: memory & cache
 
-### Reading the numbers honestly
+- **Conversational memory.** A query rewriter resolves follow-ups (*"…how about Microsoft?"*)
+  into one self-contained question. It rewrites the **question only, never the answer**, every
+  grounding guarantee is preserved.
+- **Semantic answer cache.** Reuses an answer for a semantically equivalent question
+  (~2 s → ~20 ms, at zero cost). A **two-factor key** cosine similarity *and* exact
+  company/year scope, prevents "2024 vs 2023" collisions. Server-side, shared,
+  process-lifetime (empties on redeploy, so no stale answers). Hit rate exposed at `/stats`.
 
-- **Context precision/recall (~0.66–0.73)** are capped by the section-label collapse in
-  retrieval metadata — a known, documented gap, not a mystery.
-- **RAGAS metrics** carry roughly ±0.06 run-to-run judge noise; the **deterministic** metrics
-  (refusal, numeric exact-match, routing, hallucinated citations) are the primary signal.
-- **Every metric is computed by the same harness on both sets** — the only difference is which
-  companies, so dev↔held-out deltas are apples-to-apples.
+## Tech Stack
+
+Ordered by the path a document takes from EDGAR to a cited answer:
+
+| Layer | Choice |
+|---|---|
+| Data source | `sec-edgar-downloader` |
+| HTML parsing | BeautifulSoup + lxml |
+| Table parsing | `pandas.read_html` → canonical grid |
+| Table store | SQLite |
+| Embeddings | `BAAI/bge-small-en-v1.5` |
+| Vector store | ChromaDB |
+| Sparse retrieval | `rank-bm25` |
+| Router | Rule-based (custom) |
+| Reranking | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
+| Generation | OpenAI `gpt-4o-mini` (temp 0) |
+| Serving | FastAPI + minimal frontend |
+| Deployment | Docker → Hugging Face Spaces |
+| Evaluation | RAGAS + deterministic metrics |
 
 
-## Why each decision
-
-- **Dual engine, not one vector store** — exact numeric retrieval needs deterministic keys, not
-  cosine similarity; near-identical year-over-year text makes a single store return the wrong
-  year's number.
-- **SQLite table store** — a real relational store gives exact lookup, multi-year stitching, and
-  cell-level provenance (click-to-source).
-- **Numbers never from the LLM** — every figure traces to a real cell; ingestion captions are
-  *deterministic* (built from parsed values), so nothing fabricated can enter the index.
-- **Rule-based router** — deterministic, free, unit-testable, and it can't stochastically
-  misroute; routing accuracy is a *measured* metric, not an assumption.
-- **Hybrid retrieval + RRF** — dense catches meaning, BM25 catches exact terms (tickers, "Item 7A",
-  line items); RRF fuses them.
-- **Cross-encoder rerank** — the single biggest precision lever on the text side; it reads query
-  and passage jointly instead of comparing compressed embeddings.
-- **`bge-small-en-v1.5` embeddings** — strong quality-for-size, runs locally at $0, baked into the
-  image for fast cold start.
-- **Refusal as a verbatim sentinel** — makes "refuse when unsupported" machine-checkable, not a vibe.
-- **Deliberate simplicity** — the routing is rule-based *on purpose*. FilingIQ is a grounded RAG
-  system, **not an agent** — knowing when *not* to add complexity is part of the design.
-
-## Product layer: memory & cache
-
-- **Conversational memory** — a query-rewriter resolves follow-ups ("…how about Microsoft?") into
-  one self-contained question. It rewrites the **question only, never the answer**, so every
-  grounding guarantee is preserved. Client-side and per-user.
-- **Semantic answer cache** — a cost/latency layer that reuses an answer for a semantically
-  equivalent question (~2 s → ~20 ms, $0). A **two-factor key** (cosine similarity **and** exact
-  company/year scope) prevents "2024 vs 2023" collisions. Server-side, shared, process-lifetime
-  (empty on redeploy, so no stale answers). Hit-rate exposed at `/stats`.
-
-## Tech stack
-
-| Layer | Choice | Why |
-|---|---|---|
-| Data source | `sec-edgar-downloader` | Handles EDGAR rate limits + required User-Agent |
-| HTML parsing | BeautifulSoup + lxml | Robust on messy filing HTML |
-| Table parsing | `pandas.read_html` → canonical grid | One validated parse feeds both engines |
-| Table store (Engine 2) | SQLite | Exact lookup, multi-year stitching, provenance |
-| Vector store (Engine 1) | ChromaDB | Persistent dense store |
-| Sparse retrieval | `rank-bm25` | Exact-term recall |
-| Embeddings | `BAAI/bge-small-en-v1.5` | Strong, local, $0 |
-| Reranking | `cross-encoder/ms-marco-MiniLM-L-6-v2` | Precision lever |
-| Router | rule-based | Deterministic, unit-testable |
-| Generation | OpenAI `gpt-4o-mini` (temp 0) | Cheap; reasons over evidence, never invents numbers |
-| Evaluation | RAGAS + deterministic metrics + routing accuracy | Held-out measurement |
-| Serving | FastAPI + minimal frontend | Concurrency + a clean chat UI |
-| Deploy | Docker → Hugging Face Spaces | $0 demo; portable image |
-
-## Run it locally
+## Getting Started
 
 ```bash
 git clone ⟨YOUR_REPO_URL⟩ && cd FilingIQ
-python -m venv venv && source venv/bin/activate      # prompt shows (venv)
+python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-export OPENAI_API_KEY=sk-...                          # generation + RAGAS only; everything else is local
+export OPENAI_API_KEY=sk-...   # generation + RAGAS eval only — everything else runs locally
 
-# Ingestion (run once, in order):
-python ingestion/extract.py            # section- & table-aware extraction
-python ingestion/build_table_store.py  # -> data/tables.db  (Engine 2)
-python ingestion/build_index.py        # -> chroma_db/      (Engine 1)
+# Ingestion (run once, in order)
+python ingestion/extract.py             # section- & table-aware extraction
+python ingestion/build_table_store.py   # → data/tables.db   (Table Engine)
+python ingestion/build_index.py         # → chroma_db/       (Text Engine)
 
-# Serve:
-uvicorn app.main:app --reload          # http://localhost:8000
+# Serve
+uvicorn app.main:app --reload           # http://localhost:8000
 
-# Evaluate:
+# Evaluate
 python evaluation/evaluate.py --golden evaluation/golden_set.yaml
 ```
+
+### Project structure
 
 ## Project structure
 
