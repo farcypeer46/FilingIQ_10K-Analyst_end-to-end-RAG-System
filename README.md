@@ -1,90 +1,38 @@
----
-title: FilingIQ — SEC 10-K Q&A
-emoji: 📊
-colorFrom: blue
-colorTo: green
-sdk: docker
-app_port: 8000
-pinned: false
-license: mit
----
+```mermaid
+flowchart TB
+    subgraph OFFLINE["INGESTION · offline, run once"]
+        direction TB
+        RAW["SEC EDGAR 10-K HTML"] --> CLEAN["Strip hidden XBRL<br/>Detect Item sections (1, 1A, 7, 7A, 8)"]
+        CLEAN --> PARSE["Canonical table parse · tables.py<br/><b>single source of truth</b>"]
+        CLEAN --> CHUNK["Token-aware prose chunking<br/>+ company / year / section tags"]
+        PARSE -->|"markdown + deterministic caption"| CHUNK
+        CHUNK --> EMB["bge-small-en embeddings"]
+    end
 
-# FilingIQ — Grounded Q&A over SEC 10-K filings
+    PARSE ==>|"exact records"| DB[("Engine 2 · SQLite<br/>financial_metrics")]
+    EMB  ==>|"vectors + BM25"| VEC[("Engine 1 · ChromaDB + BM25")]
 
-Advanced/Hybrid RAG over SEC 10-K filings: table-aware, section-aware, hybrid
-retrieval + reranking, **citations enforced**, **refuses when unsupported**, and
-measured on a held-out evaluation set.
+    subgraph ONLINE["QUERY · online, per request"]
+        direction TB
+        Q["User question + chat history"] --> RW["Memory · query rewriter<br/>follow-up → standalone question"]
+        RW --> CACHE{"Semantic cache<br/>hit?"}
+        CACHE -->|"miss"| COP{"Traffic Cop<br/>router"}
+        COP -->|"TABLE"| L2["Exact SQL lookup"]
+        COP -->|"TEXT"| L1["Self-query → dense + BM25<br/>→ RRF → cross-encoder rerank"]
+        COP -->|"HYBRID"| L2
+        COP -->|"HYBRID"| L1
+        L1 --> GEN["Grounded generation<br/>cited · refuses when unsupported"]
+        L2 --> GEN
+        GEN --> ANS["Answer + citations / refusal"]
+    end
 
-Ask a question in plain English; the system retrieves real evidence from the
-filings, generates an answer grounded in that evidence with **exact citations
-(company · year · section)**, and says *"I can't answer that from these filings"*
-when the filings don't support a claim — rather than hallucinating.
+    L2 -. reads .-> DB
+    L1 -. reads .-> VEC
+    CACHE -->|"hit"| ANS
+    GEN -. stores .-> CACHE
 
-**Corpus:** AAPL, MSFT, NVDA (dev) + AMZN, GOOGL (held-out), 3 years of 10-Ks each
-(15 filings), pulled from SEC EDGAR as HTML.
-
-## Architecture
-
-**Ingestion (offline, once):**
+    classDef store fill:#0A2540,stroke:#0FB5A6,color:#ffffff,stroke-width:2px;
+    classDef eng   fill:#E6FAF7,stroke:#0C8F84,color:#04302c;
+    class DB,VEC store;
+    class L1,L2,COP eng;
 ```
-EDGAR HTML 10-K
-  → strip hidden XBRL → detect Item sections (1, 1A, 7, 7A, 8)
-  → extract tables as clean Markdown (table-aware; never split a table)
-  → token-based chunking within sections (fits the 512-token embedder)
-  → contextual LLM summaries for tables (cached)
-  → embed locally (bge-small) → store: Chroma (dense) + BM25 (sparse)
-```
-
-**Online (per query):**
-```
-question → embed query
-  → hybrid retrieval: dense (Chroma) + sparse (BM25), fused with RRF
-  → cross-encoder rerank → top-k excerpts
-  → LLM answers using ONLY those excerpts, citing each claim [n]
-  → verify citations / refuse if unsupported
-```
-
-## Stack
-
-| Layer | Choice |
-|---|---|
-| Embeddings | `BAAI/bge-small-en-v1.5` (local, free) |
-| Vector store | ChromaDB (persistent) |
-| Sparse retrieval | `rank-bm25` + Reciprocal Rank Fusion |
-| Reranking | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
-| Generation | OpenAI `gpt-4o-mini` |
-| Serving | FastAPI + Uvicorn, containerized with Docker |
-
-Only the generation LLM costs money; embeddings, reranking, vector store, and
-BM25 all run locally. Table summaries are cached, so index rebuilds are $0.
-
-## Run locally
-
-```bash
-python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env          # then paste your OPENAI_API_KEY
-
-# ingest (once): download → extract → build index
-python ingestion/fetch_filings.py
-python ingestion/extract.py
-python ingestion/build_index.py
-
-# serve
-uvicorn app.main:app --reload  # open http://localhost:8000
-```
-
-## Docker
-
-```bash
-docker build -t sec-rag .
-docker run -p 8000:8000 -e OPENAI_API_KEY=sk-... sec-rag
-```
-
-See [DEPLOY.md](DEPLOY.md) for deployment (Hugging Face Spaces / Render / AWS).
-
-## API
-
-`POST /ask` → `{question, company?, year?, top_k?}` → grounded answer JSON with
-verified `citations` and a `hallucinated_citations` guard. `GET /health` for
-readiness. Interactive docs at `/docs`.
