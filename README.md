@@ -1,25 +1,22 @@
 # FilingIQ
-### Advanced RAG System over SEC 10-K Filings — Powered by a Dual-Engine Architecture
+### Advanced RAG over SEC 10-K Filings, Powered by a Dual-Engine Architecture
 
-<p align="center">
-  <a href="⟨YOUR_LIVE_APP_URL⟩"><img src="https://img.shields.io/badge/%F0%9F%9A%80_Live_Demo-Hugging_Face_Spaces-FFD21E" alt="Live Demo"></a>
-  <img src="https://img.shields.io/badge/Python-3.9-3776AB?logo=python&logoColor=white" alt="Python 3.9">
-  <img src="https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white" alt="Docker">
-  <img src="https://img.shields.io/badge/License-MIT-green" alt="License: MIT">
-</p>
+Trusted financial Q&A system built over real SEC 10-K filings of last 3 years from 5 major
+companies. Ask a question in plain English and FilingIQ pulls the *exact* figure from a
+validated table store, grounds every claim in a citation, and **refuses** when the filings
+don't support an answer or the evidence is uncertain, **zero hallucinated citations across
+the full eval set.**
 
-**Trusted financial Q&A over real SEC 10-K filings.** Ask a question in plain English and
-FilingIQ pulls the *exact* figure from a validated table store, grounds every claim in a
-citation, and **refuses** when the filings don't support an answer. Under the hood: a
-deterministic query router over a **dual engine** — exact-cell SQL lookups for numbers, and
-hybrid dense + BM25 retrieval with cross-encoder reranking for prose — served on **FastAPI**
-and kept honest by automated **RAGAS evaluation gated in CI**.
+**Under the hood:** a deterministic query router over a **dual engine** — exact-cell SQL
+lookups for numbers, hybrid dense + BM25 retrieval with cross-encoder reranking for prose and
+served on **FastAPI** and kept honest by automated **RAGAS evaluation gated in CI**.
 
-<p align="center">
-  <a href="⟨YOUR_LIVE_APP_URL⟩">
-    <img src="docs/demo.gif" alt="FilingIQ answering a financial question with a cited figure" width="90%">
-  </a>
-</p>
+[![Live Demo](https://img.shields.io/badge/%F0%9F%9A%80_Live_Demo-Hugging_Face_Spaces-FFD21E)](https://huggingface.co/spaces/peerfarcy46/10Kfilingiq)
+![Python 3.9](https://img.shields.io/badge/Python-3.9-3776AB?logo=python&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)
+![License: MIT](https://img.shields.io/badge/License-MIT-green)
+
+[![FilingIQ demo](docs/demo.gif)](https://huggingface.co/spaces/peerfarcy46/10Kfilingiq)
 
 ---
 
