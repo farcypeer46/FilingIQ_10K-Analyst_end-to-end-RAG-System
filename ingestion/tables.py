@@ -58,6 +58,15 @@ def standardize_line_item(raw_label: str) -> str | None:
     lbl = raw_label.lower()
     if any(x in lbl for x in EXCLUDE_LABEL_TERMS):
         return None
+    # Canonical headline line items are SHORT labels ("Total net sales"), never full
+    # disclosure sentences. The keyword match below is a substring test, so a long
+    # sentence that merely CONTAINS a keyword — e.g. "Portion of total net sales that
+    # was included in deferred revenue as of the beginning of the period" — would
+    # otherwise be mislabeled TOTAL_REVENUE and pollute the exact-lookup with an
+    # ambiguous second value. A word-count guard rejects such sentences generally
+    # (precision over recall); no real headline label exceeds ~8 words.
+    if len(lbl.split()) > 10:
+        return None
     for code, kws in STANDARD_LINE_ITEMS:
         if any(kw in lbl for kw in kws):
             return code

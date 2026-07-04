@@ -44,7 +44,7 @@ load_dotenv(override=True)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s  %(levelname)s  %(message)s")
 logger = logging.getLogger("generate")
 
-PROMPT_PATH = "prompts/answer_v2.yaml"
+PROMPT_PATH = "prompts/answer_v3.yaml"
 REQUEST_TIMEOUT = 30.0  # seconds per LLM call
 MAX_RETRIES = 2         # SDK retries transient errors (429/5xx) with backoff
 REQUIRED_CFG = {"model", "temperature", "max_tokens", "system", "user", "refusal_text"}
