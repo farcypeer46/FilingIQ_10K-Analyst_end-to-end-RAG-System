@@ -7,7 +7,7 @@ validated table store, grounds every claim in a citation, and **refuses** when t
 don't support an answer or the evidence is uncertain, **zero hallucinated citations across
 the full eval set.**
 
-**Under the hood:** a deterministic query router over a **dual engine** — exact-cell SQL
+**Under the hood:** a deterministic query router over a **dual engine** exact-cell SQL
 lookups for numbers, hybrid dense + BM25 retrieval with cross-encoder reranking for prose and
 served on **FastAPI** and kept honest by automated **RAGAS evaluation gated in CI**.
 
@@ -50,7 +50,7 @@ fail in different ways and need different retrieval.
 FilingIQ separates them. Numbers are answered by **exact-key lookup** against a validated
 structured store and the LLM never generates a figure, only explains one. Prose is answered by
 **semantic search** over the filings, every claim cited. A deterministic router dispatches each
-question to the right engine — and when neither engine finds support, the system **refuses**
+question to the right engine, and when neither engine finds support, the system **refuses**
 instead of guessing.
 
 ## Try it
@@ -66,32 +66,30 @@ instead of guessing.
 
 ## Architecture
 
-<p align="center">
-  <img src="docs/architecture.svg" alt="FilingIQ dual-engine architecture" width="100%">
-</p>
+![FilingIQ dual-engine architecture](https://github.com/user-attachments/assets/d8637a02-ee84-4033-933e-0e63149acecb)
 
 **One parse, two stores, one router.** Each table is parsed **once** into a validated canonical
 grid that feeds *both* engines — so the structured store and the searchable text can never
 disagree, and **no number ever originates from an LLM**.
 
-- **Ingestion (offline).** SEC EDGAR 10-K HTML → strip the hidden XBRL block + detect Item
+- **Ingestion (offline).** SEC EDGAR 10-K HTML → strip the hidden XBRL block and detect Item
   sections (BeautifulSoup/lxml) → locate tables and coarse-parse with `pandas.read_html` → the
-  **Canonical Table Parser** validates each row (column dedupe, label↔value binding, unit &
-  fiscal-year detection) and emits: **(a)** exact records → **SQLite**, and **(b)** deterministic
+  **Canonical Table Parser** validates each row (column dedupe, label↔value binding, unit and
+  fiscal-year detection) and emits **(a)** exact records → **SQLite** and **(b)** deterministic
   captions + prose chunks → **ChromaDB**.
-- **Query Router (rule-based).** Classifies each question `TEXT` / `TABLE` / `HYBRID` — free,
-  deterministic, and unit-testable.
-- **Engine 2 — Tables (SQLite).** Exact cell lookup by `(ticker, fiscal_year, line_item)`. The
-  retrieved figures are pinned to the top of the context and **bypass the reranker** — they're
+- **Query Router (rule-based).** Classifies each question as `TEXT`, `TABLE`, or `HYBRID` —
+  free, deterministic, and unit-testable.
+- **Engine 2 — Tables (SQLite).** Exact cell lookup by `(ticker, fiscal_year, line_item)`.
+  Retrieved figures are pinned to the top of the context and **bypass the reranker** — they're
   ground truth, not candidates to be re-scored.
-- **Engine 1 — Text (ChromaDB + BM25).** Self-query metadata filter → dense (`bge-small`) + sparse
-  (BM25) retrieval → **RRF fusion** → **cross-encoder reranking**.
-- **Grounded generation (`gpt-4o-mini`, temp 0).** Answers only from the provided evidence, cites
-  every claim `[n]`, and emits an exact refusal sentence when the evidence is insufficient.
+- **Engine 1 — Text (ChromaDB + BM25).** Self-query metadata filter → dense (`bge-small`) +
+  sparse (BM25) retrieval → **RRF fusion** → **cross-encoder reranking** → top-5 to the LLM.
+- **Grounded generation (`gpt-4o-mini`, temp 0).** Answers only from the provided evidence,
+  cites every claim `[n]`, and emits an exact refusal sentence when the evidence is insufficient.
 
-**A query, end to end:** *"What was NVIDIA's revenue in fiscal 2025?"* → router = `TABLE` →
-SQL lookup `(NVDA, 2025, TOTAL_REVENUE)` → exact cell → the LLM phrases the answer *around* that
-retrieved number, with a citation → cached for next time.
+**A query, end to end:** *"What was NVIDIA's revenue in fiscal 2025?"* → router: `TABLE` →
+SQL lookup `(NVDA, FY2025, TOTAL_REVENUE)` → exact cell retrieved → the LLM phrases the answer
+*around* the retrieved number, with a citation — and the result is cached for next time.
 
 ## Evaluation & results
 
