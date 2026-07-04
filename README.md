@@ -201,67 +201,86 @@ uvicorn app.main:app --reload           # http://localhost:8000
 python evaluation/evaluate.py --golden evaluation/golden_set.yaml
 ```
 
-### Project structure
-
 ## Project structure
 
 ```
 FilingIQ/
-├── ingestion/          # fetch → extract → tables.py (canonical parse) → build both stores
-├── retrieval/          # router.py, entity.py (self-query), retrieve.py (hybrid+rerank),
-│                       # table_lookup.py (SQL), rewrite.py (memory), cache.py (semantic cache)
-├── generation/         # generate.py — grounded, cited, refusing answers
-├── evaluation/         # golden sets + evaluate.py (RAGAS + deterministic + routing metrics)
-├── prompts/            # versioned prompt configs (answer_v3.yaml)
-├── app/                # FastAPI + chat UI
-├── data/               # tables.db (Engine 2)
-└── chroma_db/          # persisted vector store (Engine 1)
+├── ingestion/                 # OFFLINE builds both stores (run once, in order)
+│   ├── fetch_filings.py       # download 3yr × 5 companies from SEC EDGAR
+│   ├── extract.py             # strip hidden XBRL, detect Item sections, locate tables
+│   ├── tables.py              # Canonical Table Parser 
+│   ├── build_table_store.py   # validated records to SQLite (Engine 2)
+│   └── build_index.py         # prose and deterministic captions to ChromaDB (Engine 1)
+├── retrieval/
+│   ├── router.py              # Query Router — TEXT / TABLE / HYBRID (rule-based)
+│   ├── entity.py              # self-query: company/year extraction → metadata filter
+│   ├── retrieve.py            # hybrid dense + BM25 → RRF fusion → cross-encoder rerank
+│   ├── table_lookup.py        # exact SQL lookup against Engine 2
+│   ├── rewrite.py             # conversational memory (query rewriter)
+│   └── cache.py               # semantic answer cache (two-factor key)
+├── generation/
+│   └── generate.py            # grounded, cited, refusing answers; routes per the router
+├── evaluation/
+│   ├── evaluate.py            # RAGAS + deterministic + routing metrics
+│   ├── golden_set.yaml        # dev set (AMZN / GOOGL)
+│   ├── golden_set_test.yaml   # frozen held-out set (AAPL / MSFT / NVDA)
+│   └── results_*.json         # measured results (dev + held-out)
+├── prompts/
+│   └── answer_v3.yaml         # versioned prompt (partial-answer rule; trust structured data)
+├── app/
+│   └── main.py                # FastAPI and self-contained chat UI
+├── data/tables.db             # Engine 2, structured number store (SQLite)
+├── chroma_db/                 # Engine 1, persisted vector store (ChromaDB)
+├── Dockerfile                 # serving image (models baked in; stores shipped via Git LFS)
+└── requirements.txt
 ```
 
-## Deployment
+```
 
-Containerized with Docker (embedding + reranker models baked in for fast cold start; the prebuilt
-`chroma_db/` and `data/tables.db` ship as serving artifacts via Git LFS). Deployed on **Hugging
-Face Spaces**; the `OPENAI_API_KEY` is injected at runtime as a secret, never baked into the image.
+## Deployment & Scaling
+
+Containerized with Docker — embedding and reranker models are baked into the image for fast
+cold starts, and the prebuilt `chroma_db/` and `data/tables.db` ship as serving artifacts via
+Git LFS. Deployed on **Hugging Face Spaces**; `OPENAI_API_KEY` is injected at runtime as a
+secret, never baked into the image.
 
 ```bash
 docker build -t filingiq .
 docker run --rm -p 8000:8000 -e OPENAI_API_KEY=sk-... filingiq
 ```
 
-## Scaling to production
+### Scaling path
 
-This runs at demo scale (15 filings, single-node, ~$0), but every component was chosen so the
-*architecture* survives a 4–5 order-of-magnitude jump — swap the implementation, keep the interface.
+FilingIQ runs at demo scale (15 filings, single node, ~$0), but every component was chosen so
+the **architecture survives the jump to production scale** — swap the implementation, keep
+the interface.
 
-| Layer | Demo (here) | Production (1M+ filings) |
+| Layer | Demo (this repo) | Production (1M+ filings) |
 |---|---|---|
-| Ingestion | one script, run once | distributed, incremental (Airflow/Dagster), event-driven off EDGAR |
-| Text store | ChromaDB | pgvector / Qdrant / Milvus, sharded, metadata pre-filter |
-| Sparse | `rank-bm25` in-memory | Elasticsearch / OpenSearch |
+| Ingestion | single script, run once | distributed, incremental (Airflow/Dagster), event-driven off EDGAR |
+| Text store | ChromaDB | pgvector / Qdrant / Milvus — sharded, metadata pre-filtered |
+| Sparse retrieval | `rank-bm25` in-memory | Elasticsearch / OpenSearch |
 | Table store | SQLite | Postgres (OLTP) + ClickHouse/BigQuery (analytics) |
-| Embeddings / rerank | local CPU | batched GPU or hosted API; cache in Redis |
-| Serving | one FastAPI process | K8s / ECS behind a load balancer, autoscaled |
+| Embeddings / rerank | local CPU | batched GPU or hosted API, Redis-cached |
+| Serving | single FastAPI process | K8s / ECS behind a load balancer, autoscaled |
 | Cache | in-process | shared Redis across replicas |
 
-**What stays the same:** the dual-engine split, the router, "numbers never from an LLM,"
-single-source-of-truth parsing, refusal + citation verification, and the held-out eval discipline.
-*The hard parts don't change at scale — the stores just get bigger.*
+**What stays the same at any scale:** the dual-engine split, the router, *numbers never from
+an LLM*, single-source-of-truth parsing, refusal + citation verification, and the held-out
+evaluation discipline.
 
-## Limitations & what's next
+## Limitations & Roadmap
 
-- **Segment-line ambiguity.** When a filer uses the *same label* for a total and its segments
-  (e.g. Amazon labels total revenue "Net sales," identical to its segment rows), the table engine
-  **safely refuses** rather than guess a segment number. Next: segment-aware disambiguation.
-- **Sub-line metrics.** A few operating-cash-flow / sub-segment lines degrade to the text engine.
-- **Section detection** is regex + heuristics; some sections collapse to `other`, capping *strict*
-  retrieval Hit@k (retrieval itself is healthy). Next: an ML section segmenter.
-- **Table-parse recall** favors precision — a row is emitted only when its cells validate 1:1
-  against the detected year columns. A wrong number is worse than a missing one.
+- **Segment-line ambiguity.** When a filer uses the same label for a total and its segments
+  (Amazon labels total revenue "Net sales," identical to its segment rows), the table engine
+  **refuses rather than guesses**. Roadmap: segment-aware disambiguation.
+- **Sub-line metric coverage.** A few operating-cash-flow and sub-segment lines fall back to
+  the text engine rather than resolving to an exact cell.
+- **Section detection** is regex + heuristics; some sections collapse into a generic `other`
+  label, which caps *strict* retrieval Hit@k (lenient retrieval is unaffected). Roadmap: an
+  ML-based section segmenter.
+- **Table-parse recall deliberately favors precision.** A row enters the store only when its
+  cells validate 1:1 against the detected year columns — a wrong number is worse than a
+  missing one.
 
 ---
-
-<p align="center"><sub>Built as a study in grounded, measurable retrieval. MIT License.</sub></p>
-
-
-<img width="1175" height="600" alt="image" src="https://github.com/user-attachments/assets/d8637a02-ee84-4033-933e-0e63149acecb" />
