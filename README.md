@@ -57,15 +57,3 @@ flowchart TB
     class SQL,VDB store;
     class NOTE note;
 ```
-Title to place above it (in the README, or as text at the top of your draw.io canvas):
-
-FilingIQ — Dual-Engine Retrieval Architecture for Grounded Financial QA
-Ingestion (offline) · shared single-source stores · real-time routed retrieval + grounded generation
-
-Quick notes
-To preview: commit the README and GitHub renders it automatically, or paste into mermaid.live for instant preview + PNG/SVG export.
-For draw.io: mermaid.live → Actions → Export → SVG, then File → Import into draw.io to get an editable skeleton with all boxes placed — then just restyle to taste (shapes/colors already match the palette).
-If the <i>…</i> italics ever show as literal tags in a viewer, delete them — they're only cosmetic.
-The shape language is intentional: cylinders = stores, hexagon = the one routing decision, amber-bordered note = the grounding guarantees. That's what makes it self-explanatory.
-Want the compact "executive" version (User → Query Router → two engines → grounded answer, five boxes) to sit at the very top, with this detailed one below?
-
