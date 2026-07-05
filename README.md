@@ -53,9 +53,9 @@ structured store and the LLM never generates a figure, only explains one. Prose 
 question to the right engine, and when neither engine finds support, the system **refuses**
 instead of guessing.
 
-## Try it
+## Demo
 
-**▶ Live demo:** ⟨https://huggingface.co/spaces/peerfarcy46/10Kfilingiq⟩ · Corpus: **Apple, Microsoft, NVIDIA, Amazon, Alphabet** — latest 3 years of 10-Ks each.
+![FilingIQ demo · dual-engine grounded Q&A over SEC 10-K filings](docs/demo_video.gif)
 
 
 ## Architecture
