@@ -325,7 +325,7 @@ INDEX_HTML = """<!doctype html>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 8 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H2a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 3.6 8a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H8a1.65 1.65 0 0 0 1-1.51V2a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V8a1.65 1.65 0 0 0 1.51 1H22a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         Controls
       </button>
-      <button class="tbtn" onclick="toggle('inspector')" id="inspBtn" title="Inspector">
+      <button class="tbtn" onclick="toggleInspector()" id="inspBtn" title="Inspector">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21 4.3 4.3" transform="scale(.8)"/></svg>
         Inspector
       </button>
@@ -420,6 +420,7 @@ refreshCache();
 
 function toggle(id){var d=$(id),open=d.classList.contains('on');closeAll();if(!open){d.classList.add('on');$('scrim').classList.add('on');
   $(id==='controls'?'ctrlBtn':'inspBtn').classList.add('on');}}
+function toggleInspector(){if(!$('inspector').classList.contains('on')&&inspectors.length)renderInspector(inspectors[inspectors.length-1]);toggle('inspector');}
 function closeAll(){['controls','inspector'].forEach(function(i){$(i).classList.remove('on');});
   $('scrim').classList.remove('on');$('ctrlBtn').classList.remove('on');$('inspBtn').classList.remove('on');}
 function newChat(){chatHistory=[];inspectors=[];location.reload();}
