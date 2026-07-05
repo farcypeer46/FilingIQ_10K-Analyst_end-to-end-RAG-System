@@ -139,7 +139,9 @@ class GroundedGenerator:
             "chunk_id": h["id"],
         }
 
-    def _gather(self, question: str, top_k: int) -> tuple[list[dict], str, str]:
+    def _gather(self, question: str, top_k: int, *, route_override: str | None = None,
+                hybrid: bool = True, rerank: bool = True,
+                company: str | None = None, year: str | None = None) -> tuple[list[dict], str, str]:
         """Route the question and gather evidence. Returns (hits, intent, executed).
 
         `intent` is the Traffic Cop's classification; `executed` is what actually ran
@@ -147,12 +149,17 @@ class GroundedGenerator:
         keep them SEPARATE so routing accuracy measures the router, not Engine 2
         recall gaps.
 
+        UI overrides (the demo playground): `route_override` forces the route;
+        `company`/`year` are a manual scope filter; `hybrid`/`rerank` toggle the text
+        retriever. All are None/default in normal use, so the pipeline is unchanged.
+
         TABLE  -> exact SQL facts (+ a few supporting chunks); degrades to TEXT if no cell.
         TEXT   -> self-query scoped hybrid retrieval.
         HYBRID -> exact SQL facts AND scoped text retrieval (numbers + reasons).
         """
-        intent = classify(question).route
-        scopes = build_scopes(question)
+        intent = route_override or classify(question).route
+        scopes = ([{"company": company, **({"fiscal_year": year} if year else {})}]
+                  if company else build_scopes(question))
         facts = self.table_engine.lookup(question) if intent in (TABLE, HYBRID) else []
 
         if intent == TABLE and facts:
@@ -161,11 +168,14 @@ class GroundedGenerator:
             executed, k = HYBRID, top_k     # numbers + full prose
         else:
             executed, k = TEXT, top_k       # TEXT, or a TABLE/HYBRID with no resolvable cell
-        text_hits = self.retriever.search_scoped(question, scopes, top_k=k)
+        text_hits = self.retriever.search_scoped(question, scopes, top_k=k,
+                                                 hybrid=hybrid, rerank=rerank)
 
         return self._facts_to_hits(facts) + text_hits, intent, executed
 
-    def answer(self, question: str, top_k: int = 5, history: list[dict] | None = None) -> dict:
+    def answer(self, question: str, top_k: int = 5, history: list[dict] | None = None,
+               *, route_override: str | None = None, hybrid: bool = True, rerank: bool = True,
+               company: str | None = None, year: str | None = None, use_cache: bool = True) -> dict:
         """Return a grounded, cited, dual-engine answer dict.
 
         Keys: question, rewritten_question, answer, refused, route (TEXT/TABLE/HYBRID),
@@ -184,13 +194,18 @@ class GroundedGenerator:
         q = rewrite_followup(question, history, get_client(), self.cfg["model"]) if history else question
 
         # 2. Semantic cache (cost layer): reuse a prior answer to an equivalent question.
+        #    Skipped when the caller disables it (UI cache toggle).
         q_emb = self.retriever.embedder.encode(q).tolist()
-        cached = self.cache.lookup(q, q_emb)
-        if cached is not None:
-            return {**cached, "question": question, "rewritten_question": q, "cached": True}
+        if use_cache:
+            cached = self.cache.lookup(q, q_emb)
+            if cached is not None:
+                return {**cached, "question": question, "rewritten_question": q, "cached": True}
 
-        hits, intent, executed = self._gather(q, top_k)
-        scopes = build_scopes(q)
+        hits, intent, executed = self._gather(
+            q, top_k, route_override=route_override, hybrid=hybrid, rerank=rerank,
+            company=company, year=year)
+        scopes = ([{"company": company, **({"fiscal_year": year} if year else {})}]
+                  if company else build_scopes(q))
 
         # no evidence at all -> refuse without spending an LLM call
         if not hits:
@@ -200,7 +215,8 @@ class GroundedGenerator:
                 "citations": [], "hallucinated_citations": [], "contexts": [],
                 "route": executed, "routed_intent": intent, "scopes": scopes,
             }
-            self.cache.store(q, q_emb, payload)
+            if use_cache:
+                self.cache.store(q, q_emb, payload)
             return {**payload, "question": question, "rewritten_question": q, "cached": False}
 
         context = self._format_context(hits)
@@ -241,7 +257,8 @@ class GroundedGenerator:
             "citations": citations, "hallucinated_citations": sorted(hallucinated),
             "contexts": hits, "route": executed, "routed_intent": intent, "scopes": scopes,
         }
-        self.cache.store(q, q_emb, payload)
+        if use_cache:
+            self.cache.store(q, q_emb, payload)
         return {**payload, "question": question, "rewritten_question": q, "cached": False}
 
 

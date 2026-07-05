@@ -132,36 +132,44 @@ class HybridRetriever:
     # --- public API ---
 
     def search(
-        self, query: str, top_k: int = 5, candidates: int = 30, where: dict | None = None
+        self, query: str, top_k: int = 5, candidates: int = 30, where: dict | None = None,
+        hybrid: bool = True, rerank: bool = True,
     ) -> list[dict]:
         """Return top_k reranked chunks as dicts: {id, text, metadata, rerank_score}.
 
         `candidates` is how many to pull from each retriever before reranking.
         `where` is an optional metadata filter, e.g. {"company": "AAPL",
         "fiscal_year": "2025"} — applied to both dense and sparse sides.
+        `hybrid=False` runs dense-only (no BM25/RRF); `rerank=False` skips the
+        cross-encoder — both exposed as UI toggles so the demo doubles as a
+        retrieval playground (rerank_score is None when reranking is off).
         """
         dense = self._dense(query, candidates, where)
-        sparse = self._sparse(query, candidates, where)
-        fused = self._rrf(dense, sparse)
+        sparse = self._sparse(query, candidates, where) if hybrid else []
+        fused = self._rrf(dense, sparse) if hybrid else dense
         if not fused:
             return []
 
-        pairs = [(query, self.by_id[cid]["text"]) for cid in fused]
-        scores = self.reranker.predict(pairs)
-        ranked = sorted(zip(fused, scores), key=lambda x: x[1], reverse=True)
+        if rerank:
+            pairs = [(query, self.by_id[cid]["text"]) for cid in fused]
+            scores = self.reranker.predict(pairs)
+            order = sorted(zip(fused, scores), key=lambda x: x[1], reverse=True)
+        else:
+            order = [(cid, None) for cid in fused]  # keep fusion/dense order, no scores
 
         return [
             {
                 "id": cid,
                 "text": self.by_id[cid]["text"],
                 "metadata": self.by_id[cid]["metadata"],
-                "rerank_score": float(score),
+                "rerank_score": (float(score) if score is not None else None),
             }
-            for cid, score in ranked[:top_k]
+            for cid, score in order[:top_k]
         ]
 
     def search_scoped(
-        self, query: str, scopes: list[dict], top_k: int = 5, per_scope: int = 4
+        self, query: str, scopes: list[dict], top_k: int = 5, per_scope: int = 4,
+        hybrid: bool = True, rerank: bool = True,
     ) -> list[dict]:
         """Run one scoped search per (company/year) filter and merge (dedup by id).
 
@@ -176,14 +184,15 @@ class HybridRetriever:
           * many scopes-> per_scope hits under each filter, merged.
         """
         if not scopes:
-            return self.search(query, top_k=top_k)
+            return self.search(query, top_k=top_k, hybrid=hybrid, rerank=rerank)
         if len(scopes) == 1:
-            return self.search(query, top_k=top_k, where=scopes[0])
+            return self.search(query, top_k=top_k, where=scopes[0], hybrid=hybrid, rerank=rerank)
 
         seen: set[str] = set()
         merged: list[dict] = []
         for scope in scopes:
-            for hit in self.search(query, top_k=per_scope, where=scope):
+            for hit in self.search(query, top_k=per_scope, where=scope,
+                                   hybrid=hybrid, rerank=rerank):
                 if hit["id"] in seen:
                     continue
                 seen.add(hit["id"])
