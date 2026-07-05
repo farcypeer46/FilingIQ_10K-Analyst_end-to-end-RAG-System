@@ -36,7 +36,7 @@ served on **FastAPI** and kept honest by automated **RAGAS evaluation gated in C
 
 ## The Problem
 
-**Numbers don't belong in a vector search.** Ask a vector store *"What was net income in 2025?"*
+**Structured tables & numbers don't belong in a vector search.** Ask a vector store *"What was net income in 2025?"*
 and it may confidently return **2024's figure** because the surrounding text is nearly identical, and
 embeddings can't tell the difference. In finance, a near-miss is not a partial success; it's a
 wrong answer with a citation attached. Worse, a plain LLM will simply **fabricate** a plausible
