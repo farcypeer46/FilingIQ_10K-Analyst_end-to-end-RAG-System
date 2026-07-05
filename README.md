@@ -1,3 +1,13 @@
+---
+title: FilingIQ
+emoji: 🔍
+colorFrom: gray
+colorTo: green
+sdk: docker
+app_port: 8000
+pinned: false
+---
+
 # FilingIQ
 ### Advanced RAG system built over SEC 10-K Filings, Powered by a Dual-Engine Architecture
 
