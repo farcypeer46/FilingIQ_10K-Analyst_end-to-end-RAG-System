@@ -1,13 +1,3 @@
----
-title: FilingIQ
-emoji: 🔍
-colorFrom: gray
-colorTo: green
-sdk: docker
-app_port: 8000
-pinned: false
----
-
 # FilingIQ
 ### Advanced RAG system built over SEC 10-K Filings, Powered by a Dual-Engine Architecture
 
@@ -65,14 +55,8 @@ instead of guessing.
 
 ## Try it
 
-**▶ Live demo:** ⟨YOUR_LIVE_APP_URL⟩ · Corpus: **Apple, Microsoft, NVIDIA, Amazon, Alphabet** — latest 3 years of 10-Ks each.
+**▶ Live demo:** ⟨https://huggingface.co/spaces/peerfarcy46/10Kfilingiq⟩ · Corpus: **Apple, Microsoft, NVIDIA, Amazon, Alphabet** — latest 3 years of 10-Ks each.
 
-| Ask | FilingIQ… |
-|---|---|
-| *"What was Microsoft's total revenue in fiscal 2024?"* | returns **$245,122M** 📊 from the Table Engine, cited to the filing |
-| *"What are NVIDIA's main supply-chain risks?"* | returns grounded prose 📄 from the Text Engine, with citations |
-| *"Compare Apple's and Alphabet's net income in fiscal 2024."* | fuses both companies' exact figures 🔀 |
-| *"What is Apple's current stock price?"* | **refuses** — it isn't in the filings |
 
 ## Architecture
 
