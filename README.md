@@ -71,19 +71,19 @@ disagree, and **no number ever originates from an LLM**.
   **Canonical Table Parser** validates each row (column dedupe, label↔value binding, unit and
   fiscal-year detection) and emits **(a)** exact records → **SQLite** and **(b)** deterministic
   captions + prose chunks → **ChromaDB**.
-- **Query Router (rule-based).** Classifies each question as `TEXT`, `TABLE`, or `HYBRID` —
+- **Query Router (rule-based).** Classifies each question as `TEXT`, `TABLE`, or `HYBRID`
   free, deterministic, and unit-testable.
-- **Engine 2 — Tables (SQLite).** Exact cell lookup by `(ticker, fiscal_year, line_item)`.
+- **Engine 2: Tables (SQLite).** Exact cell lookup by `(ticker, fiscal_year, line_item)`.
   Retrieved figures are pinned to the top of the context and **bypass the reranker** — they're
   ground truth, not candidates to be re-scored.
-- **Engine 1 — Text (ChromaDB + BM25).** Self-query metadata filter → dense (`bge-small`) +
+- **Engine 1: Text (ChromaDB + BM25).** Self-query metadata filter → dense (`bge-small`) +
   sparse (BM25) retrieval → **RRF fusion** → **cross-encoder reranking** → top-5 to the LLM.
 - **Grounded generation (`gpt-4o-mini`, temp 0).** Answers only from the provided evidence,
   cites every claim `[n]`, and emits an exact refusal sentence when the evidence is insufficient.
 
 **A query, end to end:** *"What was NVIDIA's revenue in fiscal 2025?"* → router: `TABLE` →
 SQL lookup `(NVDA, FY2025, TOTAL_REVENUE)` → exact cell retrieved → the LLM phrases the answer
-*around* the retrieved number, with a citation — and the result is cached for next time.
+*around* the retrieved number, with a citation and the result is cached for next time.
 
 ## Evaluation & Results
 
